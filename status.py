@@ -34,11 +34,13 @@ init(convert=True)
 
 # configurações do parser, responsável por receber os parâmetros na hora de rodar o script
 parser = argparse.ArgumentParser(description='Verifica status dos circuitos no Sistema de Ativação.\r\n Criado por Ewerton H. Marschalk')
-parser.add_argument('-c', '--circuito', nargs='+', required=True)
+parser.add_argument('-c', '--circuito', nargs='+')
+parser.add_argument('-p', '--pppoe', nargs='+')
 args = parser.parse_args()
 
 # recuperando parâmetros
 Circuitos = args.circuito
+Logins = args.pppoe
 
 # criando objeto da biblioteta responsável por ler os credenciais do arquivo .ini
 config = configparser.ConfigParser()
@@ -103,6 +105,23 @@ def sa_site_login():
     driver.find_element_by_name("senha").send_keys(password)
     driver.find_element_by_id("entrar").click()
 
+    try:
+        logo = driver.find_element_by_id("centro").find_element_by_tag_name("img").get_attribute("src")
+    except:
+        driver.find_element_by_name("login").send_keys(login)
+        driver.find_element_by_name("senha").send_keys(password)
+        driver.find_element_by_id("entrar").click()
+
+    if logo == 'http://ativacaofibra.redeunifique.com.br/cadastro/img/logo2017.png':
+        return True
+    else:
+        try:
+            logo = driver.find_element_by_id("centro").find_element_by_tag_name("img").get_attribute("src")
+            if logo == 'http://ativacaofibra.redeunifique.com.br/cadastro/img/logo2017.png':
+                return True
+        except:
+            print('FALHA AO REALIZAR LOGIN NO SISTEMA DE ATIVAÇÃO, VERIFIQUE SEU USUÁRIO E SENHA')
+            exit()
 
 # consulta o circuito e retorna uma String com o resultado
 def verificar_circuito(circuito):
@@ -119,51 +138,87 @@ def verificar_circuito(circuito):
         value = 'error'
     return value
 
+def verificar_login(login):
+    driver.get("http://ativacaofibra.redeunifique.com.br/cadastro/interno.php?pg=interno&pg1=verificacoes_onu/status")
+
+    driver.find_element_by_name("login").send_keys(login)
+    driver.find_element_by_name("login").send_keys(Keys.ENTER)
+
+    value = None
+    try:
+        driver.find_element_by_name("sn").send_keys(Keys.SPACE)
+        driver.find_element_by_name("pesquisar").click()
+        value = driver.find_element_by_id("centro").find_element_by_tag_name('p').text
+    except:
+        value = 'error'
+    return value
+
+def verificar_circuito_login(login):
+    driver.get("http://ativacaofibra.redeunifique.com.br/cadastro/interno.php?pg=interno&pg1=outras_verificacoes/ids_cadastrados")
+
+    driver.find_element_by_name("login").send_keys(login)
+    driver.find_element_by_name("login").send_keys(Keys.ENTER)
+
+    value = None
+    try:
+        value = driver.find_element_by_id("maintable").find_elements_by_tag_name('td')[7].text
+    except Exception as e:
+        print(e)
+        value = 'error'
+    return value
+
 
 # Realiza login no sistema de ativação
-sa_site_login()
+if sa_site_login():
 
-# para cada circuito na lista Circuitos,
-# pega as informações do
-for circuito in Circuitos:
-    sc = verificar_circuito(circuito)
+    if type(Logins) == list:
+        for login in Logins:
+            print(verificar_login(login))
 
-    if sc == 'error':
-        console.print(circuito + ': circuito não encontrado ou não existem ONUs cadastradas nesse circuito.')
-    else:
-        table = Table(title=circuito)
-        circuito = sc.splitlines()
-        Header = circuito[0].split()
-        circuito.pop(0)
+            if type(Circuitos) == list and Circuitos[0] == 'pppoe':
+                Circuitos.append(verificar_circuito_login(login))
 
+    if type(Circuitos) == list:
+        # para cada circuito na lista Circuitos,
+        # pega as informações do
+        for circuito in Circuitos:
+            if circuito != 'pppoe':
+                sc = verificar_circuito(circuito)
 
-        table.add_column(Header[0])
-        table.add_column(Header[1])
-        table.add_column(Header[2])
-        table.add_column(Header[3])
-        table.add_column(str(Header[4]) + ' ' + str(Header[5]))
-        table.add_column(str(Header[6]) + ' ' + str(Header[7]))
-        table.add_column(str(Header[8]) + ' ' + str(Header[9]))
-
-        for c in circuito:
-            cs = c.split()
-
-            btv_link = '[link=http://tio.redeunifique.com.br/cadastros/planos_lista.php?codCliente=' + str(cs[4]) + ']' + str(cs[4]) + '[/link]'
-            dalo_link = '[link=http://189.45.192.17/daloinfo/index.php?username=' + str(cs[5]) + ']' + str(cs[5]) + '[/link]'
-
-            if cs[2] == 'working':
-                ont_status = str(cs[2])
-            elif cs[2] == 'LOS':
-                ont_status = "[disaster]" + str(cs[2]) + "[/disaster]"
-            else:
-                ont_status = "[warning]" + str(cs[2]) + "[/warning]"
-
-            table.add_row(str(cs[0]), str(cs[1]), ont_status, str(cs[3]), btv_link, dalo_link, str(cs[6]))
-
-        console = Console(theme=custom_theme)
-        console.print(table)
-        print()
+                if sc == 'error':
+                    console.print(circuito + ': circuito não encontrado ou não existem ONUs cadastradas nesse circuito.')
+                else:
+                    table = Table(title=circuito)
+                    circuito = sc.splitlines()
+                    Header = circuito[0].split()
+                    circuito.pop(0)
 
 
+                    table.add_column(Header[0])
+                    table.add_column(Header[1])
+                    table.add_column(Header[2])
+                    table.add_column(Header[3])
+                    table.add_column(str(Header[4]) + ' ' + str(Header[5]))
+                    table.add_column(str(Header[6]) + ' ' + str(Header[7]))
+                    table.add_column(str(Header[8]) + ' ' + str(Header[9]))
+
+                    for c in circuito:
+                        cs = c.split()
+
+                        btv_link = '[link=http://tio.redeunifique.com.br/cadastros/planos_lista.php?codCliente=' + str(cs[4]) + ']' + str(cs[4]) + '[/link]'
+                        dalo_link = '[link=http://189.45.192.17/daloinfo/index.php?username=' + str(cs[5]) + ']' + str(cs[5]) + '[/link]'
+
+                        if cs[2] == 'working':
+                            ont_status = str(cs[2])
+                        elif cs[2] == 'LOS':
+                            ont_status = "[disaster]" + str(cs[2]) + "[/disaster]"
+                        else:
+                            ont_status = "[warning]" + str(cs[2]) + "[/warning]"
+
+                        table.add_row(str(cs[0]), str(cs[1]), ont_status, str(cs[3]), btv_link, dalo_link, str(cs[6]))
+
+                    console = Console(theme=custom_theme)
+                    console.print(table)
+                    print()
 driver.quit()
 driver = None
