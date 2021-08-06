@@ -75,13 +75,16 @@ if not pathlib.Path("C:\webdriver\chromedriver.exe").exists():
     print("Baixe da mesma versão que o google chrome instalado no seu computador para evitar erros")
     sys.exit()
 
+# verificar o caminho do chromedriver
+executable_path = config.get('options','chromedriver_executable_path')
+
 # define opções padrões e instancia o webdriver
 options = selenium.webdriver.chrome.options.Options()
 Keys = selenium.webdriver.common.keys.Keys
 options.headless = True
 options.add_argument('log-level=3')
 options.add_experimental_option('excludeSwitches', ['enable-logging'])
-driver = selenium.webdriver.Chrome(executable_path=r"C:\webdriver\chromedriver.exe", options=options)
+driver = selenium.webdriver.Chrome(executable_path=executable_path, options=options)
 
 
 # realiza o login no sistema de ativação
@@ -89,7 +92,7 @@ def sa_site_login():
     login = config.get('credentials-sa', 'Login')
 
     # descriptografa a senha
-    secret_key = b'chave_secreta_que_não_é_essa_aqui_não'
+    secret_key = b''
     cipher = AES.new(secret_key, AES.MODE_ECB)
     password = cipher.decrypt(base64.b64decode(config.get('credentials-sa', 'Senha').encode('utf-8')))
     password = password.decode('utf-8')
