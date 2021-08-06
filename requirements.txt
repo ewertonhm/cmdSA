@@ -1,0 +1,7 @@
+selenium
+argparse
+PyCryptodomex
+tabulate
+colorama
+termcolor
+rich
