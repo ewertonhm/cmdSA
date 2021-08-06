@@ -27,21 +27,22 @@ exemplo:
 
 2. O arquivo '.credentials.ini' vai ser criado na raiz do seu usuário (c:/Users/seu.nome/.credentials.ini), com o seguinte conteúdo:
 
-
+```
     [credentials-sa]
     Login:usuario@redeunifique.com.br
     Senha:senha
-
+```
 - Nesse arquivo você deve preencher seu usuário do Sistema de Ativação (email), e a senha CRIPTOGRAFADA. 
 - Para criptografar a senha, abra o cmd e digite:
 `cripto`
 E siga as instruções, exemplo:
 
-
+```
     C:\Users\ewerton.marschalk>cripto
     Digite a senha:123456789
     Aqui está sua senha criptografada:
     Senha:09rMw1z+r5Xi4de9V6Gi3pKfBXtFENNQRQlvsAPTTUo=
+```
 
 ------------
 
