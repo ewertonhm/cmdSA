@@ -1,5 +1,6 @@
 # cmdSA
 Um cliente cmd para o Sistema de Ativação
+![Screenshot](screenshot.png)
 
 ## Como usar:
 - Para pesquisar um ou vários circuitos utilize:
