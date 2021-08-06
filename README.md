@@ -4,9 +4,32 @@ Um cliente cmd para o Sistema de Ativação
 
 ## Como usar:
 - Para pesquisar um ou vários circuitos utilize:
-`status -c circuitos separado por espaços`
+```
+status -c circuitos separado por espaços
+```
 exemplo:
-`status -c BNU-0700A BQE-0644B`
+```
+status -c BNU-0700A BQE-0644B
+````
+
+- Para pesquisar o status de um ou vários clientes utilize:
+```
+status -p login
+```
+exemplo:
+```
+status -p 519171
+```
+
+- para pesquisar o status de um login e do seu circuito, utilize:
+```
+status -c pppoe -p login
+```
+exemplo:
+```
+status -c pppoe -p 519171
+```
+
 
 
 ## Como instalar e configurar:
