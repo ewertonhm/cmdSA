@@ -1,7 +1,6 @@
-selenium
-argparse
-PyCryptodomex
-tabulate
-colorama
-termcolor
+bs4
+requests
+lxml
 rich
+PyCryptodomex
+cx_Freeze
