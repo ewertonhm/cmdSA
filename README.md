@@ -33,7 +33,7 @@ status -c pppoe -p 519171
 
 
 ## Como instalar e configurar:
-### 1. Faça o download da release mais recente e extraia em uma pasta do seu computador.
+### 1. Faça o download da [release](https://github.com/ewertonhm/cmdSA/releases) mais recente e extraia em uma pasta do seu computador.
 
 ### 2. Configure as variaveis de ambiente com o caminho da pasta do script:
 1. Acesse o painel de controle
@@ -41,31 +41,9 @@ status -c pppoe -p 519171
 3. Selecione a variável Path e click em Editar
 4. Click em Novo e coloque o caminho da pasta em que se encontra o arquivo status.exe
 
-### 3. Faça o download do chromedriver e salve na pasta c:\webdriver:
-1. Faça o download da versão mais recente para windows em: [Chromedriver](https://chromedriver.chromium.org/downloads "Chromedriver")
-2. Descompacte o arquivo chromedriver_win32.zip na pasta c:\webdriver.
+### 3. Abra o prompt de comando e digita 'status' e siga as instruções. 
 
-### 4. Execute a primeira vez e configure o arquivo de credenciais:
-1. abra uma janela do cmd e digite o comando:
-`status -c firstrun`
 
-2. O arquivo '.credentials.ini' vai ser criado na raiz do seu usuário (c:/Users/seu.nome/.credentials.ini), com o seguinte conteúdo:
-
-```
-    [credentials-sa]
-    Login:usuario@redeunifique.com.br
-    Senha:senha
-```
-- Nesse arquivo você deve preencher seu usuário do Sistema de Ativação (email), e a senha CRIPTOGRAFADA. 
-- Para criptografar a senha, abra o cmd e digite:
-`cripto`
-E siga as instruções, exemplo:
-
-```
-    C:\Users\ewerton.marschalk>cripto
-    Digite a senha:123456789
-    Aqui está sua senha criptografada:
-    Senha:09rMw1z+r5Xi4de9V6Gi3pKfBXtFENNQRQlvsAPTTUo=
 ```
 
 ------------
