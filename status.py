@@ -6,6 +6,8 @@ from sa import SistemaAtivacao
 from args import Argumentos
 from configs import Credentials
 from rich.table import Table
+import concurrent.futures
+
 
 def main():
     args = Argumentos()
@@ -39,10 +41,10 @@ def main():
     if type(Circuitos) == list:
         # para cada circuito na lista Circuitos,
         # pega as informações do
-        for circuito in Circuitos:
-            if circuito != 'pppoe':
-                console.print(s.verificar_circuito(circuito))
-                print()
+        threads = min(MAX_THREADS, len(Circuitos))
+
+        with concurrent.futures.ThreadPoolExecutor(max_workers=threads) as executor:
+            executor.map(s.verificar_circuito, Circuitos)
 
 
 if __name__ == '__main__':
@@ -55,6 +57,7 @@ if __name__ == '__main__':
         "disaster": "bold red"
     })
     console = Console(theme=custom_theme)
+    MAX_THREADS = 30
 
     # Run
     main()

@@ -1,5 +1,8 @@
 from bs4 import BeautifulSoup
 import requests
+from rich import print
+from rich.console import Console
+from rich.theme import Theme
 from rich.table import Table
 
 class SistemaAtivacao:
@@ -7,6 +10,8 @@ class SistemaAtivacao:
     home = 'http://ativacaofibra.redeunifique.com.br/cadastro/interno.php'
     verificar_status = 'http://ativacaofibra.redeunifique.com.br/cadastro/interno.php?pg=interno&pg1=verificacoes_onu/status'
     outras_verificacoes = 'http://ativacaofibra.redeunifique.com.br/cadastro/interno.php?pg=interno&pg1=outras_verificacoes/ids_cadastrados'
+
+
 
     def __init__(self, login, senha):
         self.login = login
@@ -19,6 +24,12 @@ class SistemaAtivacao:
         self.session.post(self.start_url, auth)
 
         home = self.session.get(self.home)
+        # Configurations
+        custom_theme = Theme({
+            "warning": "yellow",
+            "disaster": "bold red"
+        })
+        self.console = Console(theme=custom_theme)
 
     def verificar_circuito(self, circuito):
         ## get circ_id
@@ -67,7 +78,7 @@ class SistemaAtivacao:
             table.add_column(circuito)
             table.add_row('Circuito não encontrado ou não existem ONUs cadastradas nesse circuito.')
 
-        return table
+        self.console.print(table)
 
     def verificar_onu(self, sn):
         ## get status
