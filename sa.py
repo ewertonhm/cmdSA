@@ -1,16 +1,16 @@
 from bs4 import BeautifulSoup
 import requests
-from rich import print
 from rich.console import Console
 from rich.theme import Theme
 from rich.table import Table
+import concurrent.futures
 
 class SistemaAtivacao:
     start_url = 'http://ativacaofibra.redeunifique.com.br/auth.php'
     home = 'http://ativacaofibra.redeunifique.com.br/cadastro/interno.php'
     verificar_status = 'http://ativacaofibra.redeunifique.com.br/cadastro/interno.php?pg=interno&pg1=verificacoes_onu/status'
     outras_verificacoes = 'http://ativacaofibra.redeunifique.com.br/cadastro/interno.php?pg=interno&pg1=outras_verificacoes/ids_cadastrados'
-
+    MAX_THREADS = 10
 
 
     def __init__(self, login, senha):
@@ -80,6 +80,11 @@ class SistemaAtivacao:
 
         self.console.print(table)
 
+    def paralel_verificar_circuito(self, Circuitos):
+        threads = min(self.MAX_THREADS, len(Circuitos))
+        with concurrent.futures.ThreadPoolExecutor(max_workers=threads) as executor:
+            executor.map(self.verificar_circuito, Circuitos)
+
     def verificar_onu(self, sn):
         ## get status
         post = {"sn": sn, "pesquisar": "Ver Status"}
@@ -87,8 +92,7 @@ class SistemaAtivacao:
         status = str().join(soup.find('p').text.splitlines())
         return status
 
-
-    def verificar_pppoe_data(self, login):
+    def verificar_pppoe_sn_circuito(self, login):
         ## get data
         post = {"login": login, "pesquisar": "Pesquisar Login"}
         soup = BeautifulSoup(self.session.post(self.outras_verificacoes, post).text, 'lxml')
@@ -100,6 +104,51 @@ class SistemaAtivacao:
             return sn + '|' + circuito
         else:
             return False
+
+    def verificar_pppoe_sn(self, login):
+        ## get data
+        post = {"login": login, "pesquisar": "Pesquisar Login"}
+        soup = BeautifulSoup(self.session.post(self.outras_verificacoes, post).text, 'lxml')
+
+        data = soup.find_all('td')
+        if len(data) > 0:
+            sn = data[3].text
+            return sn
+        else:
+            return False
+
+    def verificar_status_login(self, login):
+        sn = self.verificar_pppoe_sn(login)
+
+        table = Table()
+        if sn != False:
+            table.add_column(login)
+            table.add_row(self.verificar_onu(sn))
+        else:
+            table.add_column(login)
+            table.add_row('Login não encontrado')
+        self.console.print(table)
+
+    def paralel_verificar_status_login(self, Logins):
+        with concurrent.futures.ThreadPoolExecutor(max_workers=None) as executor:
+            executor.map(self.verificar_status_login, Logins)
+
+    def verificar_status_login_get_circuito(self, login):
+        data = self.verificar_pppoe_sn_circuito(login)
+
+        table = Table()
+        if data != False:
+            data = data.split('|')
+            table.add_column(login)
+            table.add_row(self.verificar_onu(data[0]))
+            circuito = data[1]
+        else:
+            table.add_column(login)
+            table.add_row('Login não encontrado')
+            circuito = False
+        self.console.print(table)
+        return circuito
+
 
 
 
