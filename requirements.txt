@@ -4,3 +4,4 @@ lxml
 rich
 PyCryptodomex
 cx_Freeze
+httpx

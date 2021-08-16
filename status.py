@@ -17,6 +17,7 @@ def main():
 
     if type(Circuitos) == list and Circuitos[0] != 'pppoe':
         s.paralel_verificar_circuito(Circuitos)
+        #s.async_verificar_circuitos(Circuitos)
 
     elif type(Logins) == list and type(Circuitos) == list and Circuitos[0] == 'pppoe':
         for login in Logins:
@@ -41,13 +42,13 @@ def main():
 
 if __name__ == '__main__':
     # Debug
-    #begin_time = datetime.now()
+    begin_time = datetime.now()
 
     # Run
     main()
 
     # Debug
-    #print(datetime.now() - begin_time)
+    print(datetime.now() - begin_time)
 
 
 
