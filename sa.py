@@ -23,7 +23,8 @@ class SistemaAtivacao:
         auth = {"login": self.login, "senha": self.senha, "acao": self.acao}
         self.session.post(self.start_url, auth)
 
-        home = self.session.get(self.home)
+        ## para verificar se o login deu certo futuramente, deve retornar uma "Responsa [200]" se tiver logado:
+        #home = self.session.get(self.home)
         # Configurations
         custom_theme = Theme({
             "warning": "yellow",
@@ -79,6 +80,31 @@ class SistemaAtivacao:
             table.add_row('Circuito não encontrado ou não existem ONUs cadastradas nesse circuito.')
 
         self.console.print(table)
+
+    def raw_verificar_circuito(self, circuito):
+        ## get circ_id
+        post = {"circ": circuito, "pesquisar":"Pesquisar Circuito"}
+        soup = BeautifulSoup(self.session.post(self.verificar_status,post).text, 'lxml')
+        input_tag = soup.find_all(attrs={'name':'circ_id'})
+
+        if len(input_tag) > 0:
+            circ_id = input_tag[0]['value']
+
+            ## get circ_status
+            post = {"circ_id":circ_id,"pesquisar":"Status circuito"}
+            soup = BeautifulSoup(self.session.post(self.verificar_status,post).text, 'lxml')
+
+            thead = soup.find('thead')
+            Header = thead.text.split()
+
+            tbody = soup.find_all('tbody')
+            StatusClientes = []
+            for t in tbody:
+                StatusClientes.append(t.find_all('td'))
+
+            SC = {'Header':Header,'Status':StatusClientes}
+            return SC
+
 
     def paralel_verificar_circuito(self, Circuitos):
         threads = min(self.MAX_THREADS, len(Circuitos))
@@ -149,6 +175,41 @@ class SistemaAtivacao:
         self.console.print(table)
         return circuito
 
+class Integra_SA_ERP:
 
+    def __init__(self):
+        # Configurations
+        custom_theme = Theme({
+            "warning": "yellow",
+            "disaster": "bold red"
+        })
+        self.console = Console(theme=custom_theme)
 
+    def status_ca(self,CAs,StatusClientes):
+        for i in range(len(CAs['Names'])):
+            table = Table(title=CAs['Names'][i])
+
+            table.add_column(StatusClientes['Header'][0])
+            table.add_column(StatusClientes['Header'][1])
+            table.add_column(StatusClientes['Header'][2])
+            table.add_column(StatusClientes['Header'][3])
+            table.add_column(str(StatusClientes['Header'][4]) + ' ' + str(StatusClientes['Header'][5]))
+            table.add_column(str(StatusClientes['Header'][6]) + ' ' + str(StatusClientes['Header'][7]))
+            table.add_column(str(StatusClientes['Header'][8]) + ' ' + str(StatusClientes['Header'][9]))
+
+            for cs in StatusClientes['Status']:
+                for c in CAs['Clientes'][i]:
+                    if c == cs[4].text:
+                        btv_link = '[link=http://tio.redeunifique.com.br/cadastros/planos_lista.php?codCliente=' + cs[4].text + ']' + cs[4].text + '[/link]'
+                        dalo_link = '[link=http://189.45.192.17/daloinfo/index.php?username=' + cs[5].text + ']' + cs[5].text + '[/link]'
+
+                        if cs[2].text == 'working':
+                            ont_status = cs[2].text
+                        elif cs[2].text == 'LOS':
+                            ont_status = "[disaster]" + cs[2].text + "[/disaster]"
+                        else:
+                            ont_status = "[warning]" + cs[2].text + "[/warning]"
+
+                        table.add_row(cs[0].text, cs[1].text, ont_status, cs[3].text, btv_link, dalo_link, cs[6].text)
+            self.console.print(table)
 
