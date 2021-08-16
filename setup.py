@@ -16,5 +16,5 @@ setup(
     version = "0.1",
     description = "Verifica status dos circuitos!",
     options = {"build_exe": build_exe_options},
-    executables = [Executable("status.py", base=base), Executable("cripto.py")]
+    executables = [Executable("status.py", base=base)]
 )
