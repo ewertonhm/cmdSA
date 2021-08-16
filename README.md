@@ -3,7 +3,7 @@ Um cliente cmd para o Sistema de Ativação
 ![Screenshot](screenshot.png)
 
 ## Como usar:
-- Para pesquisar um ou vários circuitos utilize:
+### Para verificar o status de um ou vários circuitos utilize:
 ```
 status -c circuitos separado por espaços
 ```
@@ -12,7 +12,20 @@ exemplo:
 status -c BNU-0700A BQE-0644B
 ````
 
-- Para pesquisar o status de um ou vários clientes utilize:
+
+### Para verificar o status de um ou vários circuitos, com a exibição separada por Caixa de Atendimento, utilize:
+```
+status -ca circuitos separado por espaços
+```
+exemplo:
+```
+status -ca BNU-0700A
+````
+*OBS: essa consulta é um pouco mais demorada que a consulta normal ao status dos circuitos, e para ser realizada, vai necessitar de acesso a tela de 
+Gerenciamento de Portas FTTH no ERP, caso seu usuário no ERP não tenha acesso a essa tela, o comando não vai funcionar.*
+
+
+### Para pesquisar o status de um ou vários clientes utilize:
 ```
 status -p login
 ```
@@ -21,7 +34,8 @@ exemplo:
 status -p 519171
 ```
 
-- para pesquisar o status de um login e do seu circuito, utilize:
+
+### para pesquisar o status de um login e do seu circuito, utilize:
 ```
 status -c pppoe -p login
 ```
