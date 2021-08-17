@@ -1,5 +1,5 @@
 from bs4 import BeautifulSoup
-import requests
+import httpx
 
 class Erp:
     ERP_LOGIN = 'http://erp.redeunifique.com.br/login/Lw=='
@@ -11,11 +11,11 @@ class Erp:
         self.login = login
         self.senha = senha
 
-        self.session = requests.session()
+        self.session = httpx.Client()
 
         auth = {"login": self.login, "senha": self.senha}
 
-        self.session.post(self.ERP_LOGIN, auth)
+        self.session.post(self.ERP_LOGIN, data=auth)
 
 
     def buscar_cas(self, circuito):
@@ -33,7 +33,7 @@ class Erp:
             "cm_longitude":""
         }
 
-        soup = BeautifulSoup(self.session.post(self.cm_gerenciar_caixa, post).text, 'lxml')
+        soup = BeautifulSoup(self.session.post(self.cm_gerenciar_caixa, data=post).text, 'lxml')
         buttons = soup.find_all('button', {"class": "btn_editarCaixa"})
         names = soup.find_all('button', {"class":"btn_historicoCaixa"})
 
@@ -55,7 +55,7 @@ class Erp:
             "ajax":"true",
             "acao":"retornarCaixa"
         }
-        soup = BeautifulSoup(self.session.post(self.cm_gerenciar_caixa_json, post).text, 'lxml')
+        soup = BeautifulSoup(self.session.post(self.cm_gerenciar_caixa_json, data=post).text, 'lxml')
         links = soup.find_all('a', href=True)
         IDs = []
         for link in links:

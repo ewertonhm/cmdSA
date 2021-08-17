@@ -3,9 +3,11 @@ from sa import SistemaAtivacao, Integra_SA_ERP
 from args import Argumentos
 from configs import Credentials
 from btv import Erp
+import asyncio
 
 
 def main():
+
     args = Argumentos()
     Circuitos = args.getCircuitos()
     Logins = args.getLogins()
@@ -15,9 +17,9 @@ def main():
 
     s = SistemaAtivacao(credenciais.getLogin(), credenciais.getSenha())
 
+
     if type(Circuitos) == list and Circuitos[0] != 'pppoe':
         s.paralel_verificar_circuito(Circuitos)
-        #s.async_verificar_circuitos(Circuitos)
 
     elif type(Logins) == list and type(Circuitos) == list and Circuitos[0] == 'pppoe':
         for login in Logins:
@@ -47,6 +49,7 @@ if __name__ == '__main__':
     # Run
     main()
 
+    #stats.print_stats()
     # Debug
     print(datetime.now() - begin_time)
 
