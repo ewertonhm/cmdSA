@@ -1,10 +1,9 @@
 from bs4 import BeautifulSoup
 import httpx
 import asyncio
-from rich.console import Console
-from rich.theme import Theme
 from rich.table import Table
 import concurrent.futures
+from console_theme import *
 
 
 class SistemaAtivacao:
@@ -25,12 +24,8 @@ class SistemaAtivacao:
 
         ## para verificar se o login deu certo futuramente, deve retornar uma "Responsa [200]" se tiver logado:
         # print(self.session.get('http://ativacaofibra.redeunifique.com.br/auth.php'))
-        # Configurations
-        custom_theme = Theme({
-            "warning": "yellow",
-            "disaster": "bold red"
-        })
-        self.console = Console(theme=custom_theme)
+
+        self.console = CONSOLE
 
     def do_login(self):
         auth = {"login": self.login, "senha": self.senha, "acao": self.acao}

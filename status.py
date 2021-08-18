@@ -3,6 +3,7 @@ from sa import SistemaAtivacao, Integra_SA_ERP
 from args import Argumentos
 from configs import Credentials
 from btv import Erp
+from netbox import NetBox
 import asyncio
 
 
@@ -12,6 +13,7 @@ def main():
     Circuitos = args.getCircuitos()
     Logins = args.getLogins()
     CAs = args.getCAs()
+    IPs = args.getIPs()
 
     credenciais = Credentials()
 
@@ -40,6 +42,11 @@ def main():
             CAs = e.buscar_cas(circuito)
             StatusClientes = s.raw_verificar_circuito(circuito)
             integra.status_ca(CAs, StatusClientes)
+
+    elif type(IPs) == list:
+        n = NetBox(credenciais.getLogin()[:-20],credenciais.getSenha())
+        for ip in IPs:
+            n.search_ip(ip)
 
 
 if __name__ == '__main__':
