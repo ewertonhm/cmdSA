@@ -50,7 +50,8 @@ def main():
             threads.append(threading.Thread(target=n.search_ip,args=(IPs[i],)))
             threads[i].start()
 
-        [th.join() for th in threads]
+        for th in threads:
+            if th.is_alive(): th.join()
 
 
 
