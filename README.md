@@ -44,7 +44,14 @@ exemplo:
 status -c pppoe -p 519171
 ```
 
-
+### para pesquisar informações de um ou vários IPs no netbox, utilize:
+```
+status -i ipaddress
+```
+exemplo:
+```
+status -i 186.227.140.100 186.227.140.112
+```
 
 ## Como instalar e configurar:
 ### 1. Faça o download da [release](https://github.com/ewertonhm/cmdSA/releases) mais recente e extraia em uma pasta do seu computador.
