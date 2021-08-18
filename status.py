@@ -5,7 +5,7 @@ from configs import Credentials
 from btv import Erp
 from netbox import NetBox
 import asyncio
-
+import threading
 
 def main():
 
@@ -45,8 +45,13 @@ def main():
 
     elif type(IPs) == list:
         n = NetBox(credenciais.getLogin()[:-20],credenciais.getSenha())
-        for ip in IPs:
-            n.search_ip(ip)
+        threads = []
+        for i in range(len(IPs)):
+            threads.append(threading.Thread(target=n.search_ip,args=(IPs[i],)))
+            threads[i].start()
+
+        [th.join() for th in threads]
+
 
 
 if __name__ == '__main__':
