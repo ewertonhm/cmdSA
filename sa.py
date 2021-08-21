@@ -35,7 +35,7 @@ class SistemaAtivacao:
         ## get circ_id
         post = {"circ": circuito, "pesquisar":"Pesquisar Circuito"}
         soup = BeautifulSoup(self.session.post(self.verificar_status,data=post).text, 'lxml')
-        input_tag = soup.find_all(attrs={'name':'circ_id'})
+        input_tag = soup.find_all(attrs={'name':'circ_id[]'})
 
         ## create table
         table = Table(title=circuito)
@@ -44,7 +44,7 @@ class SistemaAtivacao:
             circ_id = input_tag[0]['value']
 
             ## get circ_status
-            post = {"circ_id":circ_id,"pesquisar":"Status circuito"}
+            post = {"circ_id[]":circ_id,"pesquisar":"Status circuito"}
             soup = BeautifulSoup(self.session.post(self.verificar_status,data=post).text, 'lxml')
 
             thead = soup.find('thead')
@@ -84,13 +84,13 @@ class SistemaAtivacao:
         ## get circ_id
         post = {"circ": circuito, "pesquisar":"Pesquisar Circuito"}
         soup = BeautifulSoup(self.session.post(self.verificar_status,data=post).text, 'lxml')
-        input_tag = soup.find_all(attrs={'name':'circ_id'})
+        input_tag = soup.find_all(attrs={'name':'circ_id[]'})
 
         if len(input_tag) > 0:
             circ_id = input_tag[0]['value']
 
             ## get circ_status
-            post = {"circ_id":circ_id,"pesquisar":"Status circuito"}
+            post = {"circ_id[]":circ_id,"pesquisar":"Status circuito"}
             soup = BeautifulSoup(self.session.post(self.verificar_status,data=post).text, 'lxml')
 
             thead = soup.find('thead')
