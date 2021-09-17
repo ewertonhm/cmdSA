@@ -1,17 +1,17 @@
 from bs4 import BeautifulSoup
 import httpx
-import asyncio
 from rich.table import Table
+from rich import style
+from concurrent.futures.thread import ThreadPoolExecutor as Executor
+import time
 import concurrent.futures
 from console_theme import *
 
 
 class SistemaAtivacao:
     start_url = 'http://ativacaofibra.redeunifique.com.br/auth.php'
-    home = 'http://ativacaofibra.redeunifique.com.br/cadastro/interno.php'
     verificar_status = 'http://ativacaofibra.redeunifique.com.br/cadastro/interno.php?pg=interno&pg1=verificacoes_onu/status'
     outras_verificacoes = 'http://ativacaofibra.redeunifique.com.br/cadastro/interno.php?pg=interno&pg1=outras_verificacoes/ids_cadastrados'
-    MAX_THREADS = 10
 
 
     def __init__(self, login, senha):
@@ -31,25 +31,43 @@ class SistemaAtivacao:
         auth = {"login": self.login, "senha": self.senha, "acao": self.acao}
         self.session.post(self.start_url, data=auth)
 
-    def verificar_circuito(self, circuito):
-        ## get circ_id
-        post = {"circ": circuito, "pesquisar":"Pesquisar Circuito"}
+    def split(self, a, n):
+        k, m = divmod(len(a), n)
+        return (a[i * k + min(i, m):(i + 1) * k + min(i + 1, m)] for i in range(n))
+
+    def list_to_array(self, List):
+        f = ''
+        for l in List:
+            f = "{0},{1}".format(f,l)
+        return f[1:]
+
+    def verificar_circuitos(self, Circuitos):
+        post = {"circ": self.list_to_array(Circuitos), "pesquisar":"Pesquisar Circuito"}
         soup = BeautifulSoup(self.session.post(self.verificar_status,data=post).text, 'lxml')
         input_tag = soup.find_all(attrs={'name':'circ_id[]'})
 
+        with Executor() as executor:
+            [executor.submit(self.print_circuito,tag) for tag in input_tag]
+
+
+    def print_circuito(self,circ_id):
+        circuito = str(circ_id['value']).split('|')[1]
         ## create table
         table = Table(title=circuito)
 
-        if len(input_tag) > 0:
-            circ_id = input_tag[0]['value']
+        session = httpx.Client()
+        auth = {"login": self.login, "senha": self.senha, "acao": self.acao}
+        session.post(self.start_url, data=auth, timeout=30)
 
-            ## get circ_status
-            post = {"circ_id[]":circ_id,"pesquisar":"Status circuito"}
-            soup = BeautifulSoup(self.session.post(self.verificar_status,data=post).text, 'lxml')
+        ## get circ_status
+        post = {"circ_id[]": circ_id['value'], "pesquisar": "Status circuito"}
+        soup = BeautifulSoup(session.post(self.verificar_status, data=post, timeout=30).text, 'lxml')
 
-            thead = soup.find('thead')
+        #soup = BeautifulSoup(self.session.post(self.verificar_status, data=post).text, 'lxml')
+
+        thead = soup.find('thead')
+        try:
             Header = thead.text.split()
-
             table.add_column(Header[0])
             table.add_column(Header[1])
             table.add_column(Header[2])
@@ -60,25 +78,47 @@ class SistemaAtivacao:
 
             tbody = soup.find_all('tbody')
 
+            total = len(tbody)
+            working = 0
+
             for t in tbody:
                 cs = t.find_all('td')
 
-                btv_link = '[link=http://tio.redeunifique.com.br/cadastros/planos_lista.php?codCliente=' + cs[4].text + ']' + cs[4].text + '[/link]'
-                dalo_link = '[link=http://189.45.192.17/daloinfo/index.php?username=' + cs[5].text + ']' + cs[5].text + '[/link]'
+                link = cs[4].find('a')
+                link = link['href']
+                cod_location = str(link).find('codCliente=')
+
+                btv_link = '[link=' + link + ']' + link[cod_location+11:] + '[/link]'
+                dalo_link = '[link=http://189.45.192.17/daloinfo/index.php?username=' + cs[5].text + ']' + cs[
+                    5].text + '[/link]'
 
                 if cs[2].text == 'working':
                     ont_status = cs[2].text
+                    working += 1
                 elif cs[2].text == 'LOS':
                     ont_status = "[disaster]" + cs[2].text + "[/disaster]"
                 else:
                     ont_status = "[warning]" + cs[2].text + "[/warning]"
 
                 table.add_row(cs[0].text, cs[1].text, ont_status, cs[3].text, btv_link, dalo_link, cs[6].text)
-        else:
+        except Exception as e:
             table.add_column(circuito)
             table.add_row('Circuito não encontrado ou não existem ONUs cadastradas nesse circuito.')
+            '''
+            print('#' * 20)
+            pprint.pprint(e)
+            pprint.pprint(thead)
 
-        self.console.print(table)
+            print('#' * 20)
+            pprint.pprint(soup)
+            print('#' * 20)
+            print()
+            '''
+        finally:
+            table.caption = str('Working: {0}/{1}'.format(working, total))
+            self.console.print(table)
+            print()
+
 
     def raw_verificar_circuito(self, circuito):
         ## get circ_id
@@ -197,9 +237,12 @@ class Integra_SA_ERP:
             table.add_column(str(StatusClientes['Header'][8]) + ' ' + str(StatusClientes['Header'][9]))
 
             for cs in StatusClientes['Status']:
+                link = cs[4].find('a')
+                link = link['href']
+                cod_location = str(link).find('codCliente=')
                 for c in CAs['Clientes'][i]:
-                    if c == cs[4].text:
-                        btv_link = '[link=http://tio.redeunifique.com.br/cadastros/planos_lista.php?codCliente=' + cs[4].text + ']' + cs[4].text + '[/link]'
+                    if c == link[cod_location+11:]:
+                        btv_link = '[link=' + link + ']' + link[cod_location+11:] + '[/link]'
                         dalo_link = '[link=http://189.45.192.17/daloinfo/index.php?username=' + cs[5].text + ']' + cs[5].text + '[/link]'
 
                         if cs[2].text == 'working':
