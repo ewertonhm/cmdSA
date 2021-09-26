@@ -14,14 +14,27 @@ def main():
     Logins = args.getLogins()
     CAs = args.getCAs()
     IPs = args.getIPs()
+    SNs = args.getSNs()
 
     credenciais = Credentials()
 
     s = SistemaAtivacao(credenciais.getLogin(), credenciais.getSenha())
+    #s.verificar_circuitos_id(['JVE-1346A','JVE-1347A','JVE-1347B'])
 
 
     if type(Circuitos) == list and Circuitos[0] != 'pppoe':
-        s.paralel_verificar_circuito(Circuitos)
+        s.verificar_circuitos(Circuitos)
+        #s.paralel_verificar_circuito(Circuitos)
+        '''
+        threads = []
+        for i in range(len(Circuitos)):
+            sa = SistemaAtivacao(credenciais.getLogin(), credenciais.getSenha())
+            threads.append(threading.Thread(target=sa.verificar_circuito,args=(Circuitos[i],)))
+            threads[i].start()
+
+        for th in threads:
+            if th.is_alive(): th.join()
+        '''
 
     elif type(Logins) == list and type(Circuitos) == list and Circuitos[0] == 'pppoe':
         for login in Logins:
@@ -53,18 +66,23 @@ def main():
         for th in threads:
             if th.is_alive(): th.join()
 
+    elif type(SNs) == list:
+        for sn in SNs:
+            s.verificar_status_sn(sn)
 
+    #Debug
+    #print("Número de circuitos:", len(Circuitos))
 
 if __name__ == '__main__':
     # Debug
-    begin_time = datetime.now()
+    #begin_time = datetime.now()
 
     # Run
     main()
 
     #stats.print_stats()
     # Debug
-    print(datetime.now() - begin_time)
+    #print("Tempo de execução:", datetime.now() - begin_time)
 
 
 

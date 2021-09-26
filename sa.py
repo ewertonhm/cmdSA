@@ -49,7 +49,6 @@ class SistemaAtivacao:
         with Executor() as executor:
             [executor.submit(self.print_circuito,tag) for tag in input_tag]
 
-
     def print_circuito(self,circ_id):
         circuito = str(circ_id['value']).split('|')[1]
         ## create table
@@ -119,7 +118,6 @@ class SistemaAtivacao:
             self.console.print(table)
             print()
 
-
     def raw_verificar_circuito(self, circuito):
         ## get circ_id
         post = {"circ": circuito, "pesquisar":"Pesquisar Circuito"}
@@ -143,7 +141,6 @@ class SistemaAtivacao:
 
             SC = {'Header':Header,'Status':StatusClientes}
             return SC
-
 
     def paralel_verificar_circuito(self, Circuitos):
         threads = min(self.MAX_THREADS, len(Circuitos))
@@ -213,6 +210,16 @@ class SistemaAtivacao:
             circuito = False
         self.console.print(table)
         return circuito
+
+    def verificar_status_sn(self, sn):
+        table = Table()
+        if sn != False:
+            table.add_column(sn)
+            table.add_row(self.verificar_onu(sn))
+        else:
+            table.add_column(sn)
+            table.add_row('SN não encontrado')
+        self.console.print(table)
 
 class Integra_SA_ERP:
 
