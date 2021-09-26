@@ -25,13 +25,23 @@ status -ca BNU-0700A
 Gerenciamento de Portas FTTH no ERP, caso seu usuário no ERP não tenha acesso a essa tela, o comando não vai funcionar.*
 
 
-### Para pesquisar o status de um ou vários clientes utilize:
+### Para pesquisar o status de um ou vários clientes através do login pppoe utilize:
 ```
 status -p login
 ```
 exemplo:
 ```
 status -p 519171
+```
+
+
+### Para pesquisar o status de um ou vários clientes através do serial number utilize:
+```
+status -sn serial
+```
+exemplo:
+```
+status -sn ZTEGC4B4D4B4
 ```
 
 
