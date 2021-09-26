@@ -41,7 +41,7 @@ def main():
             circuito = s.verificar_status_login_get_circuito(login)
 
             if circuito != False:
-                s.verificar_circuito(circuito)
+                s.verificar_circuitos([circuito])
 
     elif type(Logins) == list and type(Circuitos) != list:
         s.paralel_verificar_status_login(Logins)
