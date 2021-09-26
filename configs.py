@@ -4,8 +4,10 @@ import pathlib
 import inspect
 import os, sys
 import base64
+import getpass
 
-secret_key = ''
+
+secret_key = b''
 
 def read_file(file_name):
     f = open(file_name, 'r')
@@ -14,7 +16,7 @@ def read_file(file_name):
 
 def write_to_file(string):
     # Open the file in append & read mode ('a+')
-    with open(".credentials.ini", "a+") as file_object:
+    with open("credentials.ini", "a+") as file_object:
         # Move read cursor to the start of file.
         file_object.seek(0)
         # If file is not empty then append '\n'
@@ -53,16 +55,17 @@ class Credentials:
         filename = inspect.getframeinfo(inspect.currentframe()).filename
         self.path = os.path.abspath(os.path.dirname(sys.argv[0]))
 
-        p = pathlib.Path(str(self.path) + '\.credentials.ini')
+        p = pathlib.Path(str(self.path) + '\credentials.ini')
         if not p.exists():
             print('Durante a execução, desse script, o mesmo irá logar no sistema de ativação para realizar consultas;')
             print("Para prosseguir, digite o seu usuário e senha do sistema de ativação; ")
             usr = input('Digite o usuário do sistema de ativação (Email):')
-            pwd = input('Digite a senha:')
+            ## TODO: utilizar getpass
+            pwd = getpass.getpass('Digite a senha:')
             p.touch()
             add_to_file_sa_credentials(usr,pwd)
 
-        self.config.read(str(self.path) + '\.credentials.ini')
+        self.config.read(str(self.path) + '\credentials.ini')
 
     def getLogin(self):
         return self.config.get('credentials-sa', 'Login')
@@ -78,9 +81,10 @@ class Credentials:
         print('Durante a execução, desse script, o mesmo irá logar no ERP para realizar consultas;')
         print("Para prosseguir, digite o seu usuário e senha do Bemtivi; ")
         usr = input('Digite o usuário do Bemtivi:')
-        pwd = input('Digite a senha:')
+        ## TODO: utilizar getpass
+        pwd = getpass.getpass('Digite a senha:')
         add_to_file_erp_credentials(usr, pwd)
-        self.config.read(str(self.path) + '\.credentials.ini')
+        self.config.read(str(self.path) + '\credentials.ini')
 
     def check_erp_credentials(self):
         try: self.config.get('credentials-erp', 'Login')

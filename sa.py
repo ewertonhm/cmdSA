@@ -6,7 +6,7 @@ from concurrent.futures.thread import ThreadPoolExecutor as Executor
 import time
 import concurrent.futures
 from console_theme import *
-
+import os
 
 class SistemaAtivacao:
     start_url = 'http://ativacaofibra.redeunifique.com.br/auth.php'
@@ -20,16 +20,25 @@ class SistemaAtivacao:
         self.acao = 'Entrar'
 
         self.session = httpx.Client()
-        self.do_login()
 
-        ## para verificar se o login deu certo futuramente, deve retornar uma "Responsa [200]" se tiver logado:
-        # print(self.session.get('http://ativacaofibra.redeunifique.com.br/auth.php'))
+        logged = self.do_login()
+
+        if not logged:
+            print("Falha ao realizar Login no Sistema de Ativação")
+            print("Verifique a senha!")
+            print("Senha salva foi deletada, necessário rodar o script novamente para reconfigurar a senha.")
+            os.remove('credentials.ini')
+            exit()
 
         self.console = CONSOLE
 
     def do_login(self):
         auth = {"login": self.login, "senha": self.senha, "acao": self.acao}
-        self.session.post(self.start_url, data=auth)
+        soup = BeautifulSoup(self.session.post(self.start_url, data=auth).text, 'lxml')
+        if soup.find(id='logout') != None:
+            return True
+        else:
+            return False
 
     def split(self, a, n):
         k, m = divmod(len(a), n)
