@@ -2,6 +2,30 @@
 Um cliente cmd para o Sistema de Ativação
 ![Screenshot](screenshot.png)
 
+## Como instalar e configurar:
+### 1. Faça o download da [release](https://github.com/ewertonhm/cmdSA/releases) mais recente e extraia em uma pasta do seu computador.
+
+### 2. Configure as variaveis de ambiente com o caminho da pasta do script:
+1. Acesse o painel de controle
+2. Acesse: Contas de Usuários > Contas de Usuário > Alterar as variáveis do meu ambiente.
+3. Selecione a variável Path e click em Editar
+4. Click em Novo e coloque o caminho da pasta em que se encontra o arquivo status.exe
+
+### 3. Abra o prompt de comando e digita 'status' e siga as instruções. 
+
+
+```
+
+------------
+
+
+#### Links
+- O cliente conta com links para o daloinfo no caso do pppoe, e para o cadastro do cliente no caso do código do cliente, porém os links são apenas exibidos usando terminais mais modernos, no windows 10 é possível utilizar o [Windows Terminal](https://www.microsoft.com/pt-br/p/windows-terminal/ "Windows Terminal"), que pode ser baixado e instalado pela Microsoft Store.
+*OBS: No momento o script não funciona corretamente no PowerShell do Windows Terminal, que é o terminal padrão que ele abre ao ser executado, para contornar a situação, em configurações você pode alterar o "Perfil padrão" para Prompt de comando.*
+
+------------
+
+
 ## Como usar:
 ### Para verificar o status de um ou vários circuitos utilize:
 ```
@@ -56,36 +80,48 @@ status -c pppoe -p 519171
 
 ### para pesquisar informações de um ou vários IPs no netbox, utilize:
 ```
-status -i ipaddress
+status -ip ipaddress
 ```
 exemplo:
 ```
-status -i 186.227.140.100 186.227.140.112
+status -ip 186.227.140.100 186.227.140.112
 ```
 
-## Como instalar e configurar:
-### 1. Faça o download da [release](https://github.com/ewertonhm/cmdSA/releases) mais recente e extraia em uma pasta do seu computador.
+## [beta] Status por OLT e/ou Interface de OLT:
 
-### 2. Configure as variaveis de ambiente com o caminho da pasta do script:
-1. Acesse o painel de controle
-2. Acesse: Contas de Usuários > Contas de Usuário > Alterar as variáveis do meu ambiente.
-3. Selecione a variável Path e click em Editar
-4. Click em Novo e coloque o caminho da pasta em que se encontra o arquivo status.exe
+Para realizar buscas por OLT ou Slot é necessário ter a lista de IDs das OLTs e Slots,
+Incluí a lista no arquivo .zip das releases, essa lista deve ser salva em: c:/users/<seu-usuario>/olts.ini
 
-### 3. Abra o prompt de comando e digita 'status' e siga as instruções. 
+Caso queira gerar uma lista nova ou atualizar a lista (para acrescentar novas OLTs que possam ter sido inseridas após a lista ser gerada),
+Basta rodar o script status sem argumentos.
+A lista demora vários minutos para ser gerada, e necessita do chromedrive.exe salvo na pasta: C:/webdriver
+  
+## Comandos para busca por OLT e/ou Interface:
 
-
+### para pesquisar o status de todos os slots de uma olt:
+```
+status -o olt
+```
+exemplo:
+```
+status -o OLT-GPON-VII_C-1
+```
+ou também:
+```
+status -o VII_C-1
 ```
 
-------------
-
-
-#### Links
-- O cliente conta com links para o daloinfo no caso do pppoe, e para o cadastro do cliente no caso do código do cliente, porém os links são apenas exibidos usando terminais mais modernos, no windows 10 é possível utilizar o [Windows Terminal](https://www.microsoft.com/pt-br/p/windows-terminal/ "Windows Terminal"), que pode ser baixado e instalado pela Microsoft Store.
-*OBS: No momento o script não funciona corretamente no PowerShell do Windows Terminal, que é o terminal padrão que ele abre ao ser executado, para contornar a situação, em configurações você pode alterar o "Perfil padrão" para Prompt de comando.*
-
-------------
-
-
+### para pesquisar o status de um ou mais slots específicos de uma olt:
+```
+status -o olt -i interface(s)
+```
+exemplo:
+```
+status -o OLT-GPON-VII_C-1 -i gpon-olt_1/2/1	
+```
+ou também:
+```
+status -o VII_C-1 -i 1/2/1 1/2/2 1/2/3
+```
 
 
