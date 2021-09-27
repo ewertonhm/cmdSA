@@ -36,10 +36,7 @@ def add_slots_to_file(slot,id):
     write_to_olt_file('{0}:{1}'.format(slot,id))
 
 def start_driver():
-    print('Para prosseguir é necessário ter o arquivo chromedriver.exe salvo em seu computador')
-    print('O mesmo pode ser baixado em: https://chromedriver.chromium.org/downloads')
-    print('O arquivo deve ser salvo no diretório: C:\webdriver\chromedriver.exe')
-
+    print('Criando lista de OLTs... aguarde...')
     options = selenium.webdriver.chrome.options.Options()
     options.headless = True
     options.add_argument('log-level=3')
@@ -74,6 +71,10 @@ def sa_site_login(login, senha):
             exit()
 
 def lista_olts(login, senha):
+    print('Para prosseguir é necessário ter o arquivo chromedriver.exe salvo em seu computador')
+    print('O mesmo pode ser baixado em: https://chromedriver.chromium.org/downloads')
+    print('O arquivo deve ser salvo no diretório: C:\webdriver\chromedriver.exe')
+
     driver = sa_site_login(login, senha)
 
     driver.get("http://ativacaofibra.redeunifique.com.br/cadastro/interno.php?pg=interno&pg1=verificacoes_onu/status")
