@@ -159,17 +159,17 @@ class OLTs:
 
     def get_olt_id(self, olt):
         if olt[:3] == 'OLT':
-            olt_name = olt
+            olt_name = olt.upper()
         else:
-            olt_name = 'OLT-GPON-{0}'.format(olt)
+            olt_name = 'OLT-GPON-{0}'.format(olt.upper())
 
         return self.config.get(olt_name,'id')
 
     def get_olt_slot_id(self, olt, slot):
         if olt[:3] == 'OLT':
-            olt_name = olt
+            olt_name = olt.upper()
         else:
-            olt_name = 'OLT-GPON-{0}'.format(olt)
+            olt_name = 'OLT-GPON-{0}'.format(olt.upper())
 
         if slot[:4] == 'gpon':
             olt_slot = slot
