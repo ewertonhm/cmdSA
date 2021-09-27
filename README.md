@@ -90,7 +90,7 @@ status -ip 186.227.140.100 186.227.140.112
 ## [beta] Status por OLT e/ou Interface de OLT:
 
 Para realizar buscas por OLT ou Slot é necessário ter a lista de IDs das OLTs e Slots,
-Incluí a lista no arquivo .zip das releases, essa lista deve ser salva em: c:/users/<seu-usuario>/olts.ini
+Incluí a lista no arquivo .zip das releases, essa lista deve ser salva em: c:/users/[seu-usuario]/olts.ini
 
 Caso queira gerar uma lista nova ou atualizar a lista (para acrescentar novas OLTs que possam ter sido inseridas após a lista ser gerada),
 Basta rodar o script status sem argumentos.
