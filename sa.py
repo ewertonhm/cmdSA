@@ -237,7 +237,6 @@ class SistemaAtivacao:
         db_olts = busca_olt.OLTs()
         slots = db_olts.get_olt_slots(olt)
         for i in range (1, len(slots)):
-            print(slots[i][0])
             self.verificar_status_olt_interface(olt,slots[i][0])
 
 

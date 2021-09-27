@@ -10,15 +10,21 @@ import pathlib
 import inspect
 import os, sys
 import time
+from configs import find_path
 
 
 def create_olt_file():
-    f=open("olts.ini", "w")
+    path = find_path()
+    filename = path + 'olts.ini'
+    f=open(filename, "w")
     f.close()
 
 def write_to_olt_file(string):
+    path = find_path()
+    filename = path + 'olts.ini'
+
     # Open the file in append & read mode ('a+')
-    with open("olts.ini", "a+") as file_object:
+    with open(filename, "a+") as file_object:
         # Move read cursor to the start of file.
         file_object.seek(0)
         # If file is not empty then append '\n'
@@ -36,6 +42,9 @@ def add_slots_to_file(slot,id):
     write_to_olt_file('{0}:{1}'.format(slot,id))
 
 def start_driver():
+    path = find_path()
+    filename = path + 'chromedriver.exe'
+
     print('Criando lista de OLTs... aguarde...')
     options = selenium.webdriver.chrome.options.Options()
     options.headless = True
@@ -43,7 +52,7 @@ def start_driver():
     options.add_experimental_option('excludeSwitches', ['enable-logging'])
 
     # path do webdriver, o mesmo pode ser baixado em: https://chromedriver.chromium.org/downloads
-    driver = selenium.webdriver.Chrome(executable_path=r"C:\webdriver\chromedriver.exe", options=options)
+    driver = selenium.webdriver.Chrome(executable_path=r"{0}".format(filename), options=options)
 
     return driver
 
@@ -73,7 +82,7 @@ def sa_site_login(login, senha):
 def lista_olts(login, senha):
     print('Para prosseguir é necessário ter o arquivo chromedriver.exe salvo em seu computador')
     print('O mesmo pode ser baixado em: https://chromedriver.chromium.org/downloads')
-    print('O arquivo deve ser salvo no diretório: C:\webdriver\chromedriver.exe')
+    print('O arquivo deve ser salvo no diretório do script')
 
     driver = sa_site_login(login, senha)
 
@@ -139,14 +148,14 @@ class OLTs:
         self.config = configparser.ConfigParser()
 
         filename = inspect.getframeinfo(inspect.currentframe()).filename
-        self.path = os.path.abspath(os.path.dirname(sys.argv[0]))
+        self.path = find_path()
 
-        p = pathlib.Path(str(self.path) + '\olts.ini')
+        p = pathlib.Path(str(self.path) + 'olts.ini')
         if not p.exists():
             print('Lista de OLTs (olts.ini) não encontrada, execute o script novamente sem nenhum atributo e siga as instruções para criar a lista.')
             quit()
 
-        self.config.read(str(self.path) + '\olts.ini')
+        self.config.read(str(self.path) + 'olts.ini')
 
     def get_olt_id(self, olt):
         if olt[:3] == 'OLT':

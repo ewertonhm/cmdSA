@@ -9,14 +9,26 @@ import getpass
 
 secret_key = b''
 
+def find_path():
+    filename = sys.argv[0]
+    pythonpath = sys.executable
+
+    if filename[-3:] == 'exe':
+        path = pythonpath[:-len(filename)]
+    else:
+        path = pythonpath[:-(len(filename)+4)]
+    return path
+
 def read_file(file_name):
     f = open(file_name, 'r')
     values = f.readlines()
     return values
 
 def write_to_file(string):
+    path = find_path()
+    filename = path + 'credentials.ini'
     # Open the file in append & read mode ('a+')
-    with open("credentials.ini", "a+") as file_object:
+    with open(filename, "a+") as file_object:
         # Move read cursor to the start of file.
         file_object.seek(0)
         # If file is not empty then append '\n'
@@ -53,9 +65,9 @@ class Credentials:
         self.config = configparser.ConfigParser()
 
         filename = inspect.getframeinfo(inspect.currentframe()).filename
-        self.path = os.path.abspath(os.path.dirname(sys.argv[0]))
+        self.path = find_path()
 
-        p = pathlib.Path(str(self.path) + '\credentials.ini')
+        p = pathlib.Path(str(self.path) + 'credentials.ini')
         if not p.exists():
             print('Durante a execução, desse script, o mesmo irá logar no sistema de ativação para realizar consultas;')
             print("Para prosseguir, digite o seu usuário e senha do sistema de ativação; ")
@@ -65,7 +77,7 @@ class Credentials:
             p.touch()
             add_to_file_sa_credentials(usr,pwd)
 
-        self.config.read(str(self.path) + '\credentials.ini')
+        self.config.read(str(self.path) + 'credentials.ini')
 
     def getLogin(self):
         return self.config.get('credentials-sa', 'Login')
@@ -84,7 +96,7 @@ class Credentials:
         ## TODO: utilizar getpass
         pwd = getpass.getpass('Digite a senha:')
         add_to_file_erp_credentials(usr, pwd)
-        self.config.read(str(self.path) + '\credentials.ini')
+        self.config.read(str(self.path) + 'credentials.ini')
 
     def check_erp_credentials(self):
         try: self.config.get('credentials-erp', 'Login')

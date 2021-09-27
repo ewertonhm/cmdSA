@@ -1,7 +1,7 @@
 from datetime import datetime
 from sa import SistemaAtivacao, Integra_SA_ERP
 from args import Argumentos
-from configs import Credentials
+from configs import Credentials, find_path
 from btv import Erp
 from netbox import NetBox
 import asyncio
@@ -9,10 +9,11 @@ import threading
 import getpass
 import busca_olt
 import os.path
+import sys
+import version_control
 
 
 def main():
-
     args = Argumentos()
     Circuitos = args.getCircuitos()
     Logins = args.getLogins()
@@ -104,6 +105,7 @@ if __name__ == '__main__':
     #begin_time = datetime.now()
 
     # Run
+    version_control.get_online_version()
     main()
 
     #stats.print_stats()
