@@ -15,16 +15,10 @@ Um cliente cmd para o Sistema de Ativação
 
 
 ```
-
-------------
-
-
 #### Links
 - O cliente conta com links para o daloinfo no caso do pppoe, e para o cadastro do cliente no caso do código do cliente, porém os links são apenas exibidos usando terminais mais modernos, no windows 10 é possível utilizar o [Windows Terminal](https://www.microsoft.com/pt-br/p/windows-terminal/ "Windows Terminal"), que pode ser baixado e instalado pela Microsoft Store.
 *OBS: No momento o script não funciona corretamente no PowerShell do Windows Terminal, que é o terminal padrão que ele abre ao ser executado, para contornar a situação, em configurações você pode alterar o "Perfil padrão" para Prompt de comando.*
-
-------------
-
+```
 
 ## Como usar:
 ### Para verificar o status de um ou vários circuitos utilize:
@@ -90,11 +84,11 @@ status -ip 186.227.140.100 186.227.140.112
 ## [beta] Status por OLT e/ou Interface de OLT:
 
 Para realizar buscas por OLT ou Slot é necessário ter a lista de IDs das OLTs e Slots,
-Incluí a lista no arquivo .zip das releases, essa lista deve ser salva em: c:/users/[seu-usuario]/olts.ini
+Incluí a lista no arquivo .zip das releases.
 
 Caso queira gerar uma lista nova ou atualizar a lista (para acrescentar novas OLTs que possam ter sido inseridas após a lista ser gerada),
 Basta rodar o script status sem argumentos.
-A lista demora vários minutos para ser gerada, e necessita do chromedrive.exe salvo na pasta: C:/webdriver
+A lista demora vários minutos para ser gerada, e necessita do chromedrive.exe salvo na pasta do script (está incluso no zip apartir da versão 2.7)
   
 ## Comandos para busca por OLT e/ou Interface:
 
