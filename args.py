@@ -7,8 +7,10 @@ class Argumentos:
         self.parser.add_argument('-c', '--circuito', nargs='+')
         self.parser.add_argument('-p', '--pppoe', nargs='+')
         self.parser.add_argument('-ca', '--caixa_atendimento', nargs='+')
-        self.parser.add_argument('-i', '--ip', nargs='+')
+        self.parser.add_argument('-ip', '--ip', nargs='+')
         self.parser.add_argument('-sn', '--serial', nargs='+')
+        self.parser.add_argument('-o', '--olt', nargs='+')
+        self.parser.add_argument('-i', '--interface', nargs='+')
         args = self.parser.parse_args()
 
         # recuperando parâmetros
@@ -17,6 +19,8 @@ class Argumentos:
         self.CAs = args.caixa_atendimento
         self.IPs = args.ip
         self.SNs = args.serial
+        self.OLT = args.olt
+        self.Interfaces = args.interface
 
     def getCircuitos(self):
         return self.Circuitos
@@ -32,3 +36,9 @@ class Argumentos:
 
     def getSNs(self):
         return self.SNs
+
+    def getOLT(self):
+        return self.OLT
+
+    def getInterfaces(self):
+        return self.Interfaces

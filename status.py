@@ -6,6 +6,10 @@ from btv import Erp
 from netbox import NetBox
 import asyncio
 import threading
+import getpass
+import busca_olt
+import os.path
+
 
 def main():
 
@@ -15,6 +19,8 @@ def main():
     CAs = args.getCAs()
     IPs = args.getIPs()
     SNs = args.getSNs()
+    OLT = args.getOLT()
+    Interfaces = args.getInterfaces()
 
     credenciais = Credentials()
 
@@ -69,9 +75,29 @@ def main():
     elif type(SNs) == list:
         for sn in SNs:
             s.verificar_status_sn(sn)
+    elif type(OLT) == list:
+        if type(Interfaces) == list:
+            for interface in Interfaces:
+                s.verificar_status_olt_interface(OLT[0],interface)
+        else:
+            s.verificar_status_olt(OLT[0])
 
-    #Debug
-    #print("Número de circuitos:", len(Circuitos))
+    else:
+        if not os.path.isfile('olts.ini'):
+            print('Lista de OLTs (olts.ini) não encontrada, gostaria de criar agora? (pode levar vários minutos)')
+            resposta = input('y or n:')
+            if resposta == 'y':
+                busca_olt.lista_olts(credenciais.getLogin(), credenciais.getSenha())
+            else:
+                quit()
+        else:
+            print('Lista de OLTs (olts.ini) já está criada, gostaria de atualizar a lista? (pode levar vários minutos)')
+            resposta = input('y or n:')
+            if resposta == 'y':
+                busca_olt.lista_olts(credenciais.getLogin(), credenciais.getSenha())
+            else:
+                quit()
+
 
 if __name__ == '__main__':
     # Debug

@@ -7,11 +7,13 @@ import time
 import concurrent.futures
 from console_theme import *
 import os
+import busca_olt
 
 class SistemaAtivacao:
     start_url = 'http://ativacaofibra.redeunifique.com.br/auth.php'
     verificar_status = 'http://ativacaofibra.redeunifique.com.br/cadastro/interno.php?pg=interno&pg1=verificacoes_onu/status'
     outras_verificacoes = 'http://ativacaofibra.redeunifique.com.br/cadastro/interno.php?pg=interno&pg1=outras_verificacoes/ids_cadastrados'
+
 
 
     def __init__(self, login, senha):
@@ -229,6 +231,97 @@ class SistemaAtivacao:
             table.add_column(sn)
             table.add_row('SN não encontrado')
         self.console.print(table)
+
+    def verificar_status_olt(self, olt):
+        ## Busca IDs da OLT e Interface
+        db_olts = busca_olt.OLTs()
+        slots = db_olts.get_olt_slots(olt)
+        for i in range (1, len(slots)):
+            print(slots[i][0])
+            self.verificar_status_olt_interface(olt,slots[i][0])
+
+
+    def verificar_status_olt_interface(self, olt, interface):
+        title = str('Status ONUs na interface {0}, da OLT {1}:'.format(interface, olt))
+        ## create table
+        table = Table(title=title)
+
+        ## Criar sessão e logar
+        timeout = httpx.Timeout(10.0, connect=60.0)
+        session = httpx.Client(timeout=timeout)
+        auth = {"login": self.login, "senha": self.senha, "acao": self.acao}
+        session.post(self.start_url, data=auth)
+
+        ## Busca IDs da OLT e Interface
+        db_olts = busca_olt.OLTs()
+        olt_id = db_olts.get_olt_id(olt)
+        interface_id = db_olts.get_olt_slot_id(olt, interface)
+
+        ## get circ_status
+        post = {"id_olt": olt_id, "int_name": interface_id, "circ_id[]": "selecione", "pesquisar":"Continuar"}
+        soup = BeautifulSoup(session.post(self.verificar_status, data=post).text, 'lxml')
+
+        # soup = BeautifulSoup(self.session.post(self.verificar_status, data=post).text, 'lxml')
+
+        thead = soup.find('thead')
+
+        total = None
+        working = None
+
+        try:
+            Header = thead.text.split()
+            table.add_column(Header[0])
+            table.add_column(Header[1])
+            table.add_column(Header[2])
+            table.add_column(Header[3])
+            table.add_column(str(Header[4]) + ' ' + str(Header[5]))
+            table.add_column(str(Header[6]) + ' ' + str(Header[7]))
+            table.add_column(str(Header[8]) + ' ' + str(Header[9]))
+            table.add_column(Header[12])
+
+
+            tbody = soup.find_all('tbody')
+
+            total = len(tbody)
+            working = 0
+
+            for t in tbody:
+                cs = t.find_all('td')
+
+                link = cs[4].find('a')
+                link = link['href']
+                cod_location = str(link).find('codCliente=')
+
+                btv_link = '[link=' + link + ']' + link[cod_location + 11:] + '[/link]'
+                dalo_link = '[link=http://189.45.192.17/daloinfo/index.php?username=' + cs[5].text + ']' + cs[
+                    5].text + '[/link]'
+
+                if cs[2].text == 'working':
+                    ont_status = cs[2].text
+                    working += 1
+                elif cs[2].text == 'LOS':
+                    ont_status = "[disaster]" + cs[2].text + "[/disaster]"
+                else:
+                    ont_status = "[warning]" + cs[2].text + "[/warning]"
+
+                table.add_row(cs[0].text, cs[1].text, ont_status, cs[3].text, btv_link, dalo_link, cs[6].text, cs[8].text)
+        except Exception as e:
+            table.add_column(interface)
+            table.add_row('Interface/olt não encontrado ou não existem ONUs cadastradas nesse circuito.')
+            '''
+            print('#' * 20)
+            pprint.pprint(e)
+            pprint.pprint(thead)
+
+            print('#' * 20)
+            pprint.pprint(soup)
+            print('#' * 20)
+            print()
+            '''
+        finally:
+            table.caption = str('Working: {0}/{1}'.format(working, total))
+            self.console.print(table)
+            print()
 
 class Integra_SA_ERP:
 
