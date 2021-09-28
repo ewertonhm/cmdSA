@@ -88,7 +88,7 @@ Incluí a lista no arquivo .zip das releases.
 
 Caso queira gerar uma lista nova ou atualizar a lista (para acrescentar novas OLTs que possam ter sido inseridas após a lista ser gerada),
 Basta rodar o script status sem argumentos.
-A lista demora vários minutos para ser gerada, e necessita do chromedrive.exe salvo na pasta do script (está incluso no zip apartir da versão 2.7)
+A lista demora vários minutos para ser gerada, e necessita do chromedrive.exe salvo na pasta do script (está incluso no zip apartir da versão 2.7, mas pode não ser compátivel com a versão do seu Google Chrome, se for esse o caso é ncessário baixar uma versão compátivel no endereço: https://chromedriver.chromium.org/downloads, e substituir pela que está lá.)
   
 ## Comandos para busca por OLT e/ou Interface:
 
