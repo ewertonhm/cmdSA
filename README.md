@@ -81,7 +81,7 @@ exemplo:
 status -ip 186.227.140.100 186.227.140.112
 ```
 
-## [Em implementação, não está funcionando corretamente] Status por OLT e/ou Interface de OLT:
+## [Beta] Status por OLT e/ou Interface de OLT:
 
 Para realizar buscas por OLT ou Slot é necessário ter a lista de IDs das OLTs e Slots,
 Incluí a lista no arquivo .zip das releases.
