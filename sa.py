@@ -8,6 +8,7 @@ import concurrent.futures
 from console_theme import *
 import os
 import busca_olt
+from configs import find_path
 
 class SistemaAtivacao:
     start_url = 'http://ativacaofibra.redeunifique.com.br/auth.php'
@@ -29,7 +30,8 @@ class SistemaAtivacao:
             print("Falha ao realizar Login no Sistema de Ativação")
             print("Verifique a senha!")
             print("Senha salva foi deletada, necessário rodar o script novamente para reconfigurar a senha.")
-            os.remove('credentials.ini')
+            credentials_path = find_path() + 'credentials.ini'
+            os.remove(credentials_path)
             exit()
 
         self.console = CONSOLE
