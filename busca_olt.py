@@ -102,11 +102,13 @@ def lista_olts(login, senha):
         add_olt_to_file(name,id)
 
         interfaces = lista_interfaces(name, login, senha)
-
-        for i in range(1,len(interfaces['nome'])):
-            print(interfaces['nome'][i])
-            print(interfaces['id'][i])
-            add_slots_to_file(interfaces['nome'][i],interfaces['id'][i])
+        if interfaces != None:
+            for i in range(1,len(interfaces['nome'])):
+                print(interfaces['nome'][i])
+                print(interfaces['id'][i])
+                add_slots_to_file(interfaces['nome'][i],interfaces['id'][i])
+        else:
+            print("Nenhuma interface cadasrada nessa OLT.")
 
     quit(driver)
 
@@ -121,19 +123,21 @@ def lista_interfaces(olt, login, senha):
     driver.find_element_by_xpath('//*[@id="centro"]/table/tbody/tr/td[1]/form/div/div[1]/input').send_keys(Keys.BACKSPACE)
     driver.find_element_by_xpath('//*[@id="centro"]/table/tbody/tr/td[1]/form/div/div[1]/input').send_keys(olt)
     driver.find_element_by_xpath('//*[@id="centro"]/table/tbody/tr/td[1]/form/div/div[1]/input').send_keys(Keys.ENTER)
+    try:
+        driver.find_element_by_xpath('/html/body/div/div/div[2]/table/tbody/tr/td[1]/form/input').click()
 
-    driver.find_element_by_xpath('/html/body/div/div/div[2]/table/tbody/tr/td[1]/form/input').click()
+        driver.find_element_by_xpath("//*[@id='centro']/form/div[1]/div[1]").click()
+        slots = driver.find_elements_by_class_name('option')
 
-    driver.find_element_by_xpath("//*[@id='centro']/form/div[1]/div[1]").click()
-    slots = driver.find_elements_by_class_name('option')
+        interfaces = {'nome':[],'id':[]}
 
-    interfaces = {'nome':[],'id':[]}
-
-    for slot in slots:
-        interfaces['nome'].append(slot.text)
-        interfaces['id'].append(slot.get_attribute('data-value'))
-
-    quit(driver)
+        for slot in slots:
+            interfaces['nome'].append(slot.text)
+            interfaces['id'].append(slot.get_attribute('data-value'))
+    except:
+        interfaces = None
+    finally:
+        quit(driver)
 
     return interfaces
 
