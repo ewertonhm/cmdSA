@@ -84,21 +84,19 @@ def main():
             s.verificar_status_olt(OLT[0])
 
     else:
-        if not os.path.isfile('olts.ini'):
+        olts_path = find_path() + 'olts.ini'
+        if not os.path.isfile(olts_path):
             print('Lista de OLTs (olts.ini) não encontrada, gostaria de criar agora? (pode levar vários minutos)')
             resposta = input('y or n:')
             if resposta == 'y':
                 busca_olt.lista_olts(credenciais.getLogin(), credenciais.getSenha())
-            else:
-                quit()
         else:
             print('Lista de OLTs (olts.ini) já está criada, gostaria de atualizar a lista? (pode levar vários minutos)')
             resposta = input('y or n:')
             if resposta == 'y':
                 busca_olt.lista_olts(credenciais.getLogin(), credenciais.getSenha())
-            else:
-                quit()
 
+    #debbug place:
 
 if __name__ == '__main__':
     # Debug

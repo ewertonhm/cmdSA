@@ -118,15 +118,14 @@ def lista_interfaces(olt, login, senha):
 
     driver.get("http://ativacaofibra.redeunifique.com.br/cadastro/interno.php?pg=interno&pg1=verificacoes_onu/status")
     driver.find_element_by_xpath('/html/body/div/div/div[2]/table/tbody/tr/td[1]/form/div/div[1]').click()
+    driver.find_element_by_xpath('//*[@id="centro"]/table/tbody/tr/td[1]/form/div/div[1]/input').send_keys(Keys.BACKSPACE)
+    driver.find_element_by_xpath('//*[@id="centro"]/table/tbody/tr/td[1]/form/div/div[1]/input').send_keys(olt)
+    driver.find_element_by_xpath('//*[@id="centro"]/table/tbody/tr/td[1]/form/div/div[1]/input').send_keys(Keys.ENTER)
 
-
-    driver.find_element_by_xpath("//div[contains(text(),{0})]".format(olt)).click()
     driver.find_element_by_xpath('/html/body/div/div/div[2]/table/tbody/tr/td[1]/form/input').click()
 
-    driver.find_element_by_xpath('//*[@id="centro"]/form/div[1]/div[1]').click()
-
-    lista = driver.find_element_by_xpath('//*[@id="centro"]/form/div[1]/div[2]/div')
-    slots = lista.find_elements_by_class_name('option')
+    driver.find_element_by_xpath("//*[@id='centro']/form/div[1]/div[1]").click()
+    slots = driver.find_elements_by_class_name('option')
 
     interfaces = {'nome':[],'id':[]}
 
