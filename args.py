@@ -12,6 +12,7 @@ class Argumentos:
         self.parser.add_argument('-o', '--olt', nargs='+')
         self.parser.add_argument('-i', '--interface', nargs='+')
         self.parser.add_argument('-a', '--ativacao', nargs='+')
+        self.parser.add_argument('-all', '--all_circuitos', nargs='+')
         args = self.parser.parse_args()
 
         # recuperando parâmetros
@@ -23,6 +24,7 @@ class Argumentos:
         self.OLT = args.olt
         self.Interfaces = args.interface
         self.ATV = args.ativacao
+        self.All = args.all_circuitos
 
     def getCircuitos(self):
         return self.Circuitos
@@ -47,3 +49,6 @@ class Argumentos:
 
     def getAtivacao(self):
         return self.ATV
+
+    def getAllCircuitos(self):
+        return self.All

@@ -19,6 +19,28 @@ def create_olt_file():
     f=open(filename, "w")
     f.close()
 
+def create_circuitos_file():
+    path = find_path()
+    filename = path + 'circuitos.ini'
+    f=open(filename, "w")
+    f.close()
+    write_to_circuitos_file('[circuitos]')
+
+def write_to_circuitos_file(string):
+    path = find_path()
+    filename = path + 'circuitos.ini'
+
+    # Open the file in append & read mode ('a+')
+    with open(filename, "a+") as file_object:
+        # Move read cursor to the start of file.
+        file_object.seek(0)
+        # If file is not empty then append '\n'
+        data = file_object.read(100)
+        if len(data) > 0:
+            file_object.write("\n")
+        # Append text at the end of file
+        file_object.write(string)
+
 def write_to_olt_file(string):
     path = find_path()
     filename = path + 'olts.ini'
@@ -46,6 +68,8 @@ def add_olt_circuitos_to_file(olt_name):
 
 def add_circuito_to_file(circuito,id):
     write_to_olt_file('{0}:{1}'.format(circuito, id))
+    write_to_circuitos_file('{0}:{1}'.format(circuito, id))
+
 
 def start_driver():
     path = find_path()
@@ -86,6 +110,8 @@ def sa_site_login(login, senha):
             exit()
 
 def lista_olts(login, senha):
+    # TODO: Verificar a possibilidade de refazer utilizando requests com a rotina http://ativacaofibra.redeunifique.com.br/cadastro/interno.php?pg=interno&pg1=outras_verificacoes/ids_cadastrados (Outras Verificações - Verificar ID/SN cadastrados.)
+
     print('Criando lista de OLTs... aguarde...')
 
     driver = sa_site_login(login, senha)
@@ -96,6 +122,7 @@ def lista_olts(login, senha):
     olts = lista.find_elements_by_class_name('option')
 
     create_olt_file()
+    create_circuitos_file()
 
     for olt in olts:
         name = olt.text
@@ -126,6 +153,7 @@ def lista_olts(login, senha):
     quit(driver)
 
 def lista_circuito(olt, login, senha):
+
     driver = sa_site_login(login, senha)
 
     driver.get("http://ativacaofibra.redeunifique.com.br/cadastro/interno.php?pg=interno&pg1=outras_verificacoes/verificar_sinal_circ")

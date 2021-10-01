@@ -11,6 +11,7 @@ import busca_olt
 import os.path
 import sys
 import version_control
+from circuit_search import BuscaCircuito
 
 
 def main():
@@ -23,6 +24,7 @@ def main():
     OLT = args.getOLT()
     Interfaces = args.getInterfaces()
     Ativacao = args.getAtivacao()
+    AllCircuitos = args.getAllCircuitos()
 
     credenciais = Credentials()
 
@@ -32,6 +34,17 @@ def main():
     # status -c
     if type(Circuitos) == list and Circuitos[0] != 'pppoe':
         s.verificar_circuitos(Circuitos)
+
+    # status -all
+    if type(AllCircuitos) == list and AllCircuitos[0] != 'pppoe':
+        c = BuscaCircuito()
+        search_term = []
+        for circ in AllCircuitos:
+            result = c.search_circuit(circ)
+            for r in result:
+                search_term.append(r)
+        print(f'Circuitos encontrados: {search_term}')
+        s.verificar_circuitos(search_term)
 
     # status -c pppoe -p
     elif type(Logins) == list and type(Circuitos) == list and Circuitos[0] == 'pppoe':
@@ -111,8 +124,8 @@ if __name__ == '__main__':
     #begin_time = datetime.now()
 
     # Run
-    version_control.get_online_version()
     main()
+    version_control.get_online_version()
 
     #stats.print_stats()
     # Debug
