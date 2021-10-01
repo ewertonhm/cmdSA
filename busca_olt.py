@@ -41,11 +41,17 @@ def add_olt_to_file(olt_name,olt_id):
 def add_slots_to_file(slot,id):
     write_to_olt_file('{0}:{1}'.format(slot,id))
 
+def add_olt_circuitos_to_file(olt_name):
+    write_to_olt_file('[CIRCUITOS-{0}]'.format(olt_name))
+
+def add_circuito_to_file(circuito,id):
+    write_to_olt_file('{0}:{1}'.format(circuito, id))
+
 def start_driver():
     path = find_path()
     filename = path + 'chromedriver.exe'
 
-    print('Criando lista de OLTs... aguarde...')
+    print('aguarde...')
     options = selenium.webdriver.chrome.options.Options()
     options.headless = True
     options.add_argument('log-level=3')
@@ -80,9 +86,7 @@ def sa_site_login(login, senha):
             exit()
 
 def lista_olts(login, senha):
-    print('Para prosseguir é necessário ter o arquivo chromedriver.exe salvo em seu computador')
-    print('O mesmo pode ser baixado em: https://chromedriver.chromium.org/downloads')
-    print('O arquivo deve ser salvo no diretório do script')
+    print('Criando lista de OLTs... aguarde...')
 
     driver = sa_site_login(login, senha)
 
@@ -97,23 +101,55 @@ def lista_olts(login, senha):
         name = olt.text
         id = olt.get_attribute('data-value')
 
-        print('OLT:{0}, id={1}'.format(name, id))
+        print("OLT:{0}, id={1}".format(name, id))
 
         add_olt_to_file(name,id)
 
         interfaces = lista_interfaces(name, login, senha)
         if interfaces != None:
             for i in range(1,len(interfaces['nome'])):
-                print(interfaces['nome'][i])
-                print(interfaces['id'][i])
+                print("Interface:{0}, id={1}".format(interfaces['nome'][i], interfaces['id'][i]))
                 add_slots_to_file(interfaces['nome'][i],interfaces['id'][i])
         else:
             print("Nenhuma interface cadasrada nessa OLT.")
 
+        ## VERIFICA CIRCUITOS DA OLT
+        add_olt_circuitos_to_file(name)
+        circuitos = lista_circuito(name, login, senha)
+
+        if circuitos != None:
+            for i in range(0, len(circuitos['nome'])):
+                print("Circuito:{0}, id={1}".format(circuitos['nome'][i], circuitos['id'][i]))
+                add_circuito_to_file(circuitos['nome'][i], circuitos['id'][i])
+        else:
+            print("Nenhuma interface cadasrada nessa OLT.")
     quit(driver)
 
+def lista_circuito(olt, login, senha):
+    driver = sa_site_login(login, senha)
 
+    driver.get("http://ativacaofibra.redeunifique.com.br/cadastro/interno.php?pg=interno&pg1=outras_verificacoes/verificar_sinal_circ")
+    driver.find_element_by_xpath('/html/body/div/div/div[2]/table/tbody/tr/td[1]/form/div/div[1]').click()
+    driver.find_element_by_xpath('//*[@id="centro"]/table/tbody/tr/td[1]/form/div/div[1]/input').send_keys(Keys.BACKSPACE)
+    driver.find_element_by_xpath('//*[@id="centro"]/table/tbody/tr/td[1]/form/div/div[1]/input').send_keys(olt)
+    driver.find_element_by_xpath('//*[@id="centro"]/table/tbody/tr/td[1]/form/div/div[1]/input').send_keys(Keys.ENTER)
+    try:
+        driver.find_element_by_xpath('/html/body/div/div/div[2]/table/tbody/tr/td[1]/form/input').click()
 
+        driver.find_element_by_xpath("/html/body/div/div/div[2]/table/tbody/tr/td/form/div/div[1]").click()
+        circs = driver.find_elements_by_class_name('option')
+
+        circuitos = {'nome':[],'id':[]}
+
+        for circ in circs:
+            circuitos['nome'].append(circ.text[10:])
+            circuitos['id'].append(circ.get_attribute('data-value'))
+    except:
+        circuitos = None
+    finally:
+        quit(driver)
+
+    return circuitos
 
 def lista_interfaces(olt, login, senha):
     driver = sa_site_login(login, senha)
@@ -186,5 +222,13 @@ class OLTs:
             olt_name = olt
         else:
             olt_name = 'OLT-GPON-{0}'.format(olt)
+
+        return self.config.items(olt_name)
+
+    def get_olt_circuitos(self, olt):
+        if olt[:3] == 'OLT':
+            olt_name = 'CIRCUITOS-{0}'.format(olt)
+        else:
+            olt_name = 'CIRCUITOS-OLT-GPON-{0}'.format(olt)
 
         return self.config.items(olt_name)

@@ -18,6 +18,14 @@ class SistemaAtivacao:
 
 
     def __init__(self, login, senha):
+        """
+        Estância um client da biblioteca httpx
+        Tenta realizar o login no sistema de ativação com a função do_login()
+        Se não conseguir realizar login, imprime um aviso na tela, exclui o usuário e senha salvos e finaliza
+
+        :param login: login do sistema de ativação
+        :param senha: senha do sistema de ativação
+        """
         self.login = login
         self.senha = senha
         self.acao = 'Entrar'
@@ -37,6 +45,11 @@ class SistemaAtivacao:
         self.console = CONSOLE
 
     def do_login(self):
+        """
+        Tenta realizar login no sistema de ativação, caso consiga retona True, do contrário False
+
+        :return: boolean
+        """
         auth = {"login": self.login, "senha": self.senha, "acao": self.acao}
         soup = BeautifulSoup(self.session.post(self.start_url, data=auth).text, 'lxml')
         if soup.find(id='logout') != None:
@@ -45,16 +58,34 @@ class SistemaAtivacao:
             return False
 
     def split(self, a, n):
+        """
+        TODO: documentar
+
+        :param a:
+        :param n:
+        :return:
+        """
         k, m = divmod(len(a), n)
         return (a[i * k + min(i, m):(i + 1) * k + min(i + 1, m)] for i in range(n))
 
     def list_to_array(self, List):
+        """
+        Transforma uma lista em um string com os valores divididos por virgula
+        :param List: Lista de circuitos
+        :return: String
+        """
         f = ''
         for l in List:
             f = "{0},{1}".format(f,l)
         return f[1:]
 
     def verificar_circuitos(self, Circuitos):
+        """
+        Recebe uma lista de circuitos, consulta seus IDs no sistema de ativação,
+        Passa os IDs para a função print_circuito() executar de forma asyncrona.
+        :param Circuitos: Lista de strings com os nomes dos circuitos
+        :return: Sem retorno
+        """
         post = {"circ": self.list_to_array(Circuitos), "pesquisar":"Pesquisar Circuito"}
         soup = BeautifulSoup(self.session.post(self.verificar_status,data=post).text, 'lxml')
         input_tag = soup.find_all(attrs={'name':'circ_id[]'})
@@ -63,6 +94,12 @@ class SistemaAtivacao:
             [executor.submit(self.print_circuito,tag) for tag in input_tag]
 
     def print_circuito(self,circ_id):
+        """
+        recebe um id do circuito, consulta esse circuito no sistema de ativação, monta uma tabela com os dados e imprime na tela.
+
+        :param circ_id: string gerado pela função verificar_circuitos()
+        :return: Exibe na tela
+        """
         circuito = str(circ_id['value']).split('|')[1]
         ## create table
         table = Table(title=circuito)
@@ -116,22 +153,17 @@ class SistemaAtivacao:
         except Exception as e:
             table.add_column(circuito)
             table.add_row('Circuito não encontrado ou não existem ONUs cadastradas nesse circuito.')
-            '''
-            print('#' * 20)
-            pprint.pprint(e)
-            pprint.pprint(thead)
-
-            print('#' * 20)
-            pprint.pprint(soup)
-            print('#' * 20)
-            print()
-            '''
         finally:
             table.caption = str('Working: {0}/{1}'.format(working, total))
             self.console.print(table)
             print()
 
     def raw_verificar_circuito(self, circuito):
+        """
+        Consulta um circuito e retorna uma Lista com os valores
+        :param circuito: string
+        :return: Lista
+        """
         ## get circ_id
         post = {"circ": circuito, "pesquisar":"Pesquisar Circuito"}
         soup = BeautifulSoup(self.session.post(self.verificar_status,data=post).text, 'lxml')
@@ -156,11 +188,21 @@ class SistemaAtivacao:
             return SC
 
     def paralel_verificar_circuito(self, Circuitos):
+        """
+        TODO: verificar se ainda é utilizado em alguma parte do código
+        :param Circuitos:
+        :return:
+        """
         threads = min(self.MAX_THREADS, len(Circuitos))
         with concurrent.futures.ThreadPoolExecutor(max_workers=threads) as executor:
             executor.map(self.verificar_circuito, Circuitos)
 
     def verificar_onu(self, sn):
+        """
+        Busca o status de um serial number no sistema de ativação e retorna
+        :param sn: String
+        :return: String
+        """
         ## get status
         post = {"sn": sn, "pesquisar": "Ver Status"}
         soup = BeautifulSoup(self.session.post(self.verificar_status, data=post).text, 'lxml')
@@ -240,6 +282,84 @@ class SistemaAtivacao:
         slots = db_olts.get_olt_slots(olt)
         for i in range (1, len(slots)):
             self.verificar_status_olt_interface(olt,slots[i][0])
+
+    def get_circuit_ids(self, olt):
+        """
+        Recebe o nome de uma OLT e retorna o circ_id de todos os cricuitos dessa OLT
+
+        :param olt: String com o nome da OLT
+        :return: Lista com os circ_ids
+        """
+        db_olts = busca_olt.OLTs()
+        circuitos = db_olts.get_olt_circuitos(olt)
+        Circuitos = []
+        for circuito in circuitos:
+            Circuitos.append(circuito[0])
+
+        post = {"circ": self.list_to_array(Circuitos), "pesquisar": "Pesquisar Circuito"}
+        soup = BeautifulSoup(self.session.post(self.verificar_status, data=post).text, 'lxml')
+        input_tag = soup.find_all(attrs={'name': 'circ_id[]'})
+
+        circ_ids = []
+        for c in input_tag:
+            circ_ids.append(c['value'])
+        return circ_ids
+
+    def reorganize_circ_id_ativ(self, circ_id):
+        """
+        reorganiza o circ_id coletado no status para ser usado na ativação
+        :param circ_id: String
+        :return: String
+        """
+        dados = circ_id.split("|")
+        circ_id = dados[0]
+        circ_name = dados[1]
+        olt_id = dados[2]
+        slot = dados[3]
+        slot_id = dados[4]
+
+        dados_new = '{0}|{1}|{2}|{3}|{4}|ativo'.format(olt_id, slot_id, circ_name, slot, circ_id)
+
+        return dados_new
+
+    def verificar_onus_disponiveis_ativacao_circuito(self, circ_id):
+        """
+        http://ativacaofibra.redeunifique.com.br/cadastro/interno.php?pg=interno&pg1=novos_cadastros/ativar_onu
+        Verifica se existe alguma ONU disponível para ativação no circuito.
+
+        :param circ_id:
+        :return:
+        """
+        url = "http://ativacaofibra.redeunifique.com.br/cadastro/interno.php?pg=interno&pg1=novos_cadastros/ativar_onu"
+        circuito = self.reorganize_circ_id_ativ(circ_id)
+        post = {"circ_id": circuito, "botao": "Verificar ONU disponíveis para ativação "}
+        soup = BeautifulSoup(self.session.post(url, data=post).text, 'lxml')
+
+        form = soup.find('form', attrs={'name': 'aa'})
+        onus = form.find_all('option')
+        uncg_onus = []
+        for onu in onus:
+            uncg_onus.append(onu.text)
+        return uncg_onus
+
+    def print_onus_disponiveis_ativacao(self, olt):
+        table = Table(title="ONU disponíveis para ativação na OLT: {0}.".format(olt))
+
+        circuitos = self.get_circuit_ids(olt)
+        if len(circuitos)>0:
+            table.add_column('ONU')
+            table.add_column('Circuito')
+
+            for circuito in circuitos:
+                uncf_onus = self.verificar_onus_disponiveis_ativacao_circuito(circuito)
+                circ = circuito.split('|')
+                for onu in uncf_onus:
+                    table.add_row(onu,circ[1])
+        else:
+            table.add_row('Não há ONU sem configuração.')
+
+        self.console.print(table)
+
 
 
     def verificar_status_olt_interface(self, olt, interface):

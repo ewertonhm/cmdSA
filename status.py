@@ -22,37 +22,29 @@ def main():
     SNs = args.getSNs()
     OLT = args.getOLT()
     Interfaces = args.getInterfaces()
+    Ativacao = args.getAtivacao()
 
     credenciais = Credentials()
 
     s = SistemaAtivacao(credenciais.getLogin(), credenciais.getSenha())
     #s.verificar_circuitos_id(['JVE-1346A','JVE-1347A','JVE-1347B'])
 
-
+    # status -c
     if type(Circuitos) == list and Circuitos[0] != 'pppoe':
         s.verificar_circuitos(Circuitos)
-        #s.paralel_verificar_circuito(Circuitos)
-        '''
-        threads = []
-        for i in range(len(Circuitos)):
-            sa = SistemaAtivacao(credenciais.getLogin(), credenciais.getSenha())
-            threads.append(threading.Thread(target=sa.verificar_circuito,args=(Circuitos[i],)))
-            threads[i].start()
 
-        for th in threads:
-            if th.is_alive(): th.join()
-        '''
-
+    # status -c pppoe -p
     elif type(Logins) == list and type(Circuitos) == list and Circuitos[0] == 'pppoe':
         for login in Logins:
             circuito = s.verificar_status_login_get_circuito(login)
 
             if circuito != False:
                 s.verificar_circuitos([circuito])
-
+    # status -p
     elif type(Logins) == list and type(Circuitos) != list:
         s.paralel_verificar_status_login(Logins)
 
+    # status -ca
     elif type(CAs) == list:
         credenciais.check_erp_credentials()
         e = Erp(credenciais.getErpLogin(),credenciais.getErpSenha())
@@ -63,6 +55,7 @@ def main():
             StatusClientes = s.raw_verificar_circuito(circuito)
             integra.status_ca(CAs, StatusClientes)
 
+    # status -ip
     elif type(IPs) == list:
         n = NetBox(credenciais.getLogin()[:-20],credenciais.getSenha())
         threads = []
@@ -73,27 +66,42 @@ def main():
         for th in threads:
             if th.is_alive(): th.join()
 
+    # status -sn
     elif type(SNs) == list:
         for sn in SNs:
             s.verificar_status_sn(sn)
+
+    # status -o
     elif type(OLT) == list:
+        # -i
         if type(Interfaces) == list:
             for interface in Interfaces:
                 s.verificar_status_olt_interface(OLT[0],interface)
         else:
             s.verificar_status_olt(OLT[0])
 
+    # status -a
+    elif type(Ativacao) == list:
+        s.print_onus_disponiveis_ativacao(Ativacao[0])
+
+    # no option set
     else:
         olts_path = find_path() + 'olts.ini'
         if not os.path.isfile(olts_path):
             print('Lista de OLTs (olts.ini) não encontrada, gostaria de criar agora? (pode levar vários minutos)')
             resposta = input('y or n:')
             if resposta == 'y':
+                print('Para prosseguir é necessário ter o arquivo chromedriver.exe salvo em seu computador')
+                print('O mesmo pode ser baixado em: https://chromedriver.chromium.org/downloads')
+                print('O arquivo deve ser salvo no diretório do script')
                 busca_olt.lista_olts(credenciais.getLogin(), credenciais.getSenha())
         else:
             print('Lista de OLTs (olts.ini) já está criada, gostaria de atualizar a lista? (pode levar vários minutos)')
             resposta = input('y or n:')
             if resposta == 'y':
+                print('Para prosseguir é necessário ter o arquivo chromedriver.exe salvo em seu computador')
+                print('O mesmo pode ser baixado em: https://chromedriver.chromium.org/downloads')
+                print('O arquivo deve ser salvo no diretório do script')
                 busca_olt.lista_olts(credenciais.getLogin(), credenciais.getSenha())
 
     #debbug place:
