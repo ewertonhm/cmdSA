@@ -81,7 +81,7 @@ exemplo:
 status -ip 186.227.140.100 186.227.140.112
 ```
 
-## [Beta] Status por OLT e/ou Interface de OLT:
+## Status por OLT e/ou Interface de OLT:
 
 Para realizar buscas por OLT ou Slot é necessário ter a lista de IDs das OLTs e Slots,
 Incluí a lista no arquivo .zip das releases.
@@ -118,4 +118,17 @@ ou também:
 status -o VII_C-1 -i 1/2/1 1/2/2 1/2/3
 ```
 
+## ONUs disponíveis para ativação e qual circuito elas percentem
 
+### para pesquisar quais onus estão pendentes de ativação e verificar de qual circuito elas são, utilize o comando:
+```
+status -a olt
+```
+exemplo:
+```
+status -a OLT-GPON-UVA_C-1
+```
+ou também:
+```
+status -a UVA_C-1
+```
