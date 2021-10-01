@@ -1,4 +1,11 @@
-- Verificar de qual circuito é uma ONU pedindo autenticação
+- Buscar status de um login - Implementado na versão 1.2
+- Deixar as buscar mais rápidas - Implementado na versão 2.0, melhorado nas versões 2.1 e 2.3
+- Preencher interativamente os dados de credencial - Implementado na versão 2.0
+- Listar circuito por caixas de atendimento - Implementado na versão 2.2
+- Buscar por SN - Implementado na versão 2.4.1
+- Buscar por slot - Implementado na versão 2.5
+- Deixar todos os arquivos (credentials e etc) na raiz do script - Implementado na versão 2.7
+- Verificar de qual circuito é uma ONU pedindo autenticação - Implementado na versão 2.8
 - Ver sinal na tela de status
 - Salvar output para txt
 - pesquisar por ID do Cliente
