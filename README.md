@@ -30,6 +30,15 @@ exemplo:
 status -c BNU-0700A BQE-0644B
 ````
 
+### Também é possível pesquisar usando parte do nome de um circuito, para isso utilize:
+```
+status -all circuitos separado por espaços
+```
+exemplo:
+```
+status -all BNU-0700 BQE-06
+````
+
 
 ### Para verificar o status de um ou vários circuitos, com a exibição separada por Caixa de Atendimento, utilize:
 ```
