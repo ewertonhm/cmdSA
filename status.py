@@ -36,7 +36,7 @@ def main():
         s.verificar_circuitos(Circuitos)
 
     # status -all
-    if type(AllCircuitos) == list and AllCircuitos[0] != 'pppoe':
+    elif type(AllCircuitos) == list and AllCircuitos[0] != 'pppoe':
         c = BuscaCircuito()
         search_term = []
         for circ in AllCircuitos:
