@@ -12,6 +12,7 @@ import os, sys
 import time
 from configs import find_path
 
+__DRIVER = []
 
 def create_olt_file():
     path = find_path()
@@ -77,62 +78,77 @@ def start_driver():
 
     print('aguarde...')
     options = selenium.webdriver.chrome.options.Options()
-    options.headless = True
+    options.headless = False
     options.add_argument('log-level=3')
+    #options.setPageLoadStrategy(PageLoadStrategy.NONE);
+    #options.add_argument("start-maximized")
+    #options.add_argument("enable-automation")
+    #options.add_argument("--headless")
+    #options.add_argument("--no-sandbox")
+    #options.add_argument("--disable-infobars")
+    #options.add_argument("--disable-dev-shm-usage")
+    #options.add_argument("--disable-browser-side-navigation")
+    #options.add_argument("--disable-gpu")
     options.add_experimental_option('excludeSwitches', ['enable-logging'])
 
     # path do webdriver, o mesmo pode ser baixado em: https://chromedriver.chromium.org/downloads
-    driver = selenium.webdriver.Chrome(executable_path=r"{0}".format(filename), options=options)
-
-    return driver
+    __DRIVER.append(selenium.webdriver.Chrome(executable_path=r"{0}".format(filename), options=options))
 
 def sa_site_login(login, senha):
-    driver = start_driver()
-
     logo = None
-    driver.get("http://ativacaofibra.redeunifique.com.br/")
+    __DRIVER[0].get("http://ativacaofibra.redeunifique.com.br/index.php")
+    print('Realizando Login no sistema de ativação...')
+    __DRIVER[0].find_element_by_name("login").send_keys(login)
+    __DRIVER[0].find_element_by_name("senha").send_keys(senha)
+    __DRIVER[0].find_element_by_id("entrar").click()
+    __DRIVER[0].get("http://ativacaofibra.redeunifique.com.br/cadastro/interno.php")
+
     try:
-        logo = driver.find_element_by_id("centro").find_element_by_tag_name("img").get_attribute("src")
+        logo = __DRIVER[0].find_element_by_id("centro").find_element_by_tag_name("img").get_attribute("src")
     except:
-        driver.find_element_by_name("login").send_keys(login)
-        driver.find_element_by_name("senha").send_keys(senha)
-        driver.find_element_by_id("entrar").click()
+        __DRIVER[0].find_element_by_name("login").send_keys(login)
+        __DRIVER[0].find_element_by_name("senha").send_keys(senha)
+        __DRIVER[0].find_element_by_id("entrar").click()
 
     if logo == 'http://ativacaofibra.redeunifique.com.br/cadastro/img/logo2017.png':
-        return driver
+        print('Login realizado com sucesso...')
+        return True
     else:
         try:
-            logo = driver.find_element_by_id("centro").find_element_by_tag_name("img").get_attribute("src")
+            logo = __DRIVER[0].find_element_by_id("centro").find_element_by_tag_name("img").get_attribute("src")
             if logo == 'http://ativacaofibra.redeunifique.com.br/cadastro/img/logo2017.png':
-                return driver
+                print('Login realizado com sucesso...')
+                return True
         except:
             print('FALHA AO REALIZAR LOGIN NO SISTEMA DE ATIVAÇÃO')
             exit()
 
-def lista_olts(login, senha):
+def lista_olts():
     # TODO: Verificar a possibilidade de refazer utilizando requests com a rotina http://ativacaofibra.redeunifique.com.br/cadastro/interno.php?pg=interno&pg1=outras_verificacoes/ids_cadastrados (Outras Verificações - Verificar ID/SN cadastrados.)
 
     print('Criando lista de OLTs... aguarde...')
 
-    driver = sa_site_login(login, senha)
-
-    driver.get("http://ativacaofibra.redeunifique.com.br/cadastro/interno.php?pg=interno&pg1=verificacoes_onu/status")
-    driver.find_element_by_xpath('/html/body/div/div/div[2]/table/tbody/tr/td[1]/form/div/div[1]').click()
-    lista = driver.find_element_by_xpath('/html/body/div/div/div[2]/table/tbody/tr/td[1]/form/div/div[2]/div')
+    __DRIVER[0].get("http://ativacaofibra.redeunifique.com.br/cadastro/interno.php?pg=interno&pg1=verificacoes_onu/status")
+    __DRIVER[0].find_element_by_xpath('/html/body/div/div/div[2]/table/tbody/tr/td[1]/form/div/div[1]').click()
+    lista = __DRIVER[0].find_element_by_xpath('/html/body/div/div/div[2]/table/tbody/tr/td[1]/form/div/div[2]/div')
     olts = lista.find_elements_by_class_name('option')
+    data = {'name': [], 'id': []}
+    for olt in olts:
+        data['name'].append(olt.text)
+        data['id'].append(olt.get_attribute('data-value'))
 
     create_olt_file()
     create_circuitos_file()
 
-    for olt in olts:
-        name = olt.text
-        id = olt.get_attribute('data-value')
+    for i in range(0, len(data['name'])):
+        name = data['name'][i]
+        id = data['id'][i]
 
         print("OLT:{0}, id={1}".format(name, id))
 
         add_olt_to_file(name,id)
 
-        interfaces = lista_interfaces(name, login, senha)
+        interfaces = lista_interfaces(name)
         if interfaces != None:
             for i in range(1,len(interfaces['nome'])):
                 print("Interface:{0}, id={1}".format(interfaces['nome'][i], interfaces['id'][i]))
@@ -142,7 +158,7 @@ def lista_olts(login, senha):
 
         ## VERIFICA CIRCUITOS DA OLT
         add_olt_circuitos_to_file(name)
-        circuitos = lista_circuito(name, login, senha)
+        circuitos = lista_circuito(name)
 
         if circuitos != None:
             for i in range(0, len(circuitos['nome'])):
@@ -150,22 +166,22 @@ def lista_olts(login, senha):
                 add_circuito_to_file(circuitos['nome'][i], circuitos['id'][i])
         else:
             print("Nenhuma interface cadasrada nessa OLT.")
-    quit(driver)
+    quit(__DRIVER[0])
 
-def lista_circuito(olt, login, senha):
+def lista_circuito(olt):
 
-    driver = sa_site_login(login, senha)
+    #driver = sa_site_login(login, senha)
 
-    driver.get("http://ativacaofibra.redeunifique.com.br/cadastro/interno.php?pg=interno&pg1=outras_verificacoes/verificar_sinal_circ")
-    driver.find_element_by_xpath('/html/body/div/div/div[2]/table/tbody/tr/td[1]/form/div/div[1]').click()
-    driver.find_element_by_xpath('//*[@id="centro"]/table/tbody/tr/td[1]/form/div/div[1]/input').send_keys(Keys.BACKSPACE)
-    driver.find_element_by_xpath('//*[@id="centro"]/table/tbody/tr/td[1]/form/div/div[1]/input').send_keys(olt)
-    driver.find_element_by_xpath('//*[@id="centro"]/table/tbody/tr/td[1]/form/div/div[1]/input').send_keys(Keys.ENTER)
+    __DRIVER[0].get("http://ativacaofibra.redeunifique.com.br/cadastro/interno.php?pg=interno&pg1=outras_verificacoes/verificar_sinal_circ")
+    __DRIVER[0].find_element_by_xpath('/html/body/div/div/div[2]/table/tbody/tr/td[1]/form/div/div[1]').click()
+    __DRIVER[0].find_element_by_xpath('//*[@id="centro"]/table/tbody/tr/td[1]/form/div/div[1]/input').send_keys(Keys.BACKSPACE)
+    __DRIVER[0].find_element_by_xpath('//*[@id="centro"]/table/tbody/tr/td[1]/form/div/div[1]/input').send_keys(olt)
+    __DRIVER[0].find_element_by_xpath('//*[@id="centro"]/table/tbody/tr/td[1]/form/div/div[1]/input').send_keys(Keys.ENTER)
     try:
-        driver.find_element_by_xpath('/html/body/div/div/div[2]/table/tbody/tr/td[1]/form/input').click()
+        __DRIVER[0].find_element_by_xpath('/html/body/div/div/div[2]/table/tbody/tr/td[1]/form/input').click()
 
-        driver.find_element_by_xpath("/html/body/div/div/div[2]/table/tbody/tr/td/form/div/div[1]").click()
-        circs = driver.find_elements_by_class_name('option')
+        __DRIVER[0].find_element_by_xpath("/html/body/div/div/div[2]/table/tbody/tr/td/form/div/div[1]").click()
+        circs = __DRIVER[0].find_elements_by_class_name('option')
 
         circuitos = {'nome':[],'id':[]}
 
@@ -174,24 +190,22 @@ def lista_circuito(olt, login, senha):
             circuitos['id'].append(circ.get_attribute('data-value'))
     except:
         circuitos = None
-    finally:
-        quit(driver)
 
     return circuitos
 
-def lista_interfaces(olt, login, senha):
-    driver = sa_site_login(login, senha)
+def lista_interfaces(olt):
+    #driver = sa_site_login(login, senha)
 
-    driver.get("http://ativacaofibra.redeunifique.com.br/cadastro/interno.php?pg=interno&pg1=verificacoes_onu/status")
-    driver.find_element_by_xpath('/html/body/div/div/div[2]/table/tbody/tr/td[1]/form/div/div[1]').click()
-    driver.find_element_by_xpath('//*[@id="centro"]/table/tbody/tr/td[1]/form/div/div[1]/input').send_keys(Keys.BACKSPACE)
-    driver.find_element_by_xpath('//*[@id="centro"]/table/tbody/tr/td[1]/form/div/div[1]/input').send_keys(olt)
-    driver.find_element_by_xpath('//*[@id="centro"]/table/tbody/tr/td[1]/form/div/div[1]/input').send_keys(Keys.ENTER)
+    __DRIVER[0].get("http://ativacaofibra.redeunifique.com.br/cadastro/interno.php?pg=interno&pg1=verificacoes_onu/status")
+    __DRIVER[0].find_element_by_xpath('/html/body/div/div/div[2]/table/tbody/tr/td[1]/form/div/div[1]').click()
+    __DRIVER[0].find_element_by_xpath('//*[@id="centro"]/table/tbody/tr/td[1]/form/div/div[1]/input').send_keys(Keys.BACKSPACE)
+    __DRIVER[0].find_element_by_xpath('//*[@id="centro"]/table/tbody/tr/td[1]/form/div/div[1]/input').send_keys(olt)
+    __DRIVER[0].find_element_by_xpath('//*[@id="centro"]/table/tbody/tr/td[1]/form/div/div[1]/input').send_keys(Keys.ENTER)
     try:
-        driver.find_element_by_xpath('/html/body/div/div/div[2]/table/tbody/tr/td[1]/form/input').click()
+        __DRIVER[0].find_element_by_xpath('/html/body/div/div/div[2]/table/tbody/tr/td[1]/form/input').click()
 
-        driver.find_element_by_xpath("//*[@id='centro']/form/div[1]/div[1]").click()
-        slots = driver.find_elements_by_class_name('option')
+        __DRIVER[0].find_element_by_xpath("//*[@id='centro']/form/div[1]/div[1]").click()
+        slots = __DRIVER[0].find_elements_by_class_name('option')
 
         interfaces = {'nome':[],'id':[]}
 
@@ -200,8 +214,6 @@ def lista_interfaces(olt, login, senha):
             interfaces['id'].append(slot.get_attribute('data-value'))
     except:
         interfaces = None
-    finally:
-        quit(driver)
 
     return interfaces
 

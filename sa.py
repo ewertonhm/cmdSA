@@ -138,7 +138,7 @@ class SistemaAtivacao:
                 cod_location = str(link).find('codCliente=')
 
                 btv_link = '[link=' + link + ']' + link[cod_location+11:] + '[/link]'
-                dalo_link = '[link=http://189.45.192.17/daloinfo/index.php?username=' + cs[5].text + ']' + cs[
+                dalo_link = '[link=https://dashboard.redeunifique.com.br/dash_cliente.php?item=' + cs[5].text + ']' + cs[
                     5].text + '[/link]'
 
                 if cs[2].text == 'working':
@@ -414,7 +414,7 @@ class SistemaAtivacao:
                 cod_location = str(link).find('codCliente=')
 
                 btv_link = '[link=' + link + ']' + link[cod_location + 11:] + '[/link]'
-                dalo_link = '[link=http://189.45.192.17/daloinfo/index.php?username=' + cs[5].text + ']' + cs[
+                dalo_link = '[link=https://dashboard.redeunifique.com.br/dash_cliente.php?item=' + cs[5].text + ']' + cs[
                     5].text + '[/link]'
 
                 if cs[2].text == 'working':
@@ -473,7 +473,7 @@ class Integra_SA_ERP:
                 for c in CAs['Clientes'][i]:
                     if c == link[cod_location+11:]:
                         btv_link = '[link=' + link + ']' + link[cod_location+11:] + '[/link]'
-                        dalo_link = '[link=http://189.45.192.17/daloinfo/index.php?username=' + cs[5].text + ']' + cs[5].text + '[/link]'
+                        dalo_link = '[link=https://dashboard.redeunifique.com.br/dash_cliente.php?item=' + cs[5].text + ']' + cs[5].text + '[/link]'
 
                         if cs[2].text == 'working':
                             ont_status = cs[2].text
