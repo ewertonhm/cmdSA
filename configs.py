@@ -5,18 +5,32 @@ import inspect
 import os, sys
 import base64
 import getpass
+import dload
+
 
 
 secret_key = b''
+
+def download_chromedriver():
+    return dload.save_unzip(
+        'https://chromedriver.storage.googleapis.com/95.0.4638.69/chromedriver_win32.zip',
+        extract_path=find_path(),
+        delete_after=True
+    )
 
 def find_path():
     filename = sys.argv[0]
     pythonpath = sys.executable
 
-    if filename[-3:] == 'exe':
-        path = pythonpath[:-len(filename)]
+    path = ''
+
+    if os.path.split(sys.argv[0])[1][-2:] == 'py':
+        path = sys.executable[0:-23]
     else:
-        path = pythonpath[:-(len(filename)+4)]
+        if filename[-3:] == 'exe':
+            path = pythonpath[:-len(filename)]
+        else:
+            path = pythonpath[:-(len(filename)+4)]
     return path
 
 def read_file(file_name):
