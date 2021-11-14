@@ -11,6 +11,7 @@ import inspect
 import os, sys
 import time
 from configs import find_path
+from tqdm import tqdm
 
 __DRIVER = []
 
@@ -81,14 +82,14 @@ def start_driver():
     options.headless = False
     options.add_argument('log-level=3')
     #options.setPageLoadStrategy(PageLoadStrategy.NONE);
-    #options.add_argument("start-maximized")
-    #options.add_argument("enable-automation")
-    #options.add_argument("--headless")
-    #options.add_argument("--no-sandbox")
-    #options.add_argument("--disable-infobars")
-    #options.add_argument("--disable-dev-shm-usage")
-    #options.add_argument("--disable-browser-side-navigation")
-    #options.add_argument("--disable-gpu")
+    options.add_argument("start-maximized")
+    options.add_argument("enable-automation")
+    options.add_argument("--headless")
+    options.add_argument("--no-sandbox")
+    options.add_argument("--disable-infobars")
+    options.add_argument("--disable-dev-shm-usage")
+    options.add_argument("--disable-browser-side-navigation")
+    options.add_argument("--disable-gpu")
     options.add_experimental_option('excludeSwitches', ['enable-logging'])
 
     # path do webdriver, o mesmo pode ser baixado em: https://chromedriver.chromium.org/downloads
@@ -140,14 +141,32 @@ def lista_olts():
     create_olt_file()
     create_circuitos_file()
 
-    for i in range(0, len(data['name'])):
+    olt_count = len(data['name'])
+
+    for i in tqdm(range(0, olt_count), unit='olt'):
         name = data['name'][i]
         id = data['id'][i]
 
-        print("OLT:{0}, id={1}".format(name, id))
+        #print("OLT:{0}, id={1}".format(name, id))
 
         add_olt_to_file(name,id)
 
+        ci = lista_circuitos_interfaces(name)
+
+        if ci['interfaces'][0] != None:
+            for i in range(0, len(ci['interfaces'][0]['nome'])):
+                #print("Interface:{0}, id={1}".format(ci['interfaces'][0]['nome'][i], ci['interfaces'][0]['id'][i]))
+                add_slots_to_file(ci['interfaces'][0]['nome'][i], ci['interfaces'][0]['id'][i])
+
+
+        add_olt_circuitos_to_file(name)
+
+        if ci['circuitos'][0] != None:
+            for i in range(0, len(ci['circuitos'][0]['nome'])):
+                #print("Circuito:{0}, id={1}".format(ci['circuitos'][0]['nome'][i], ci['circuitos'][0]['id'][i]))
+                add_circuito_to_file(ci['circuitos'][0]['nome'][i], ci['circuitos'][0]['id'][i])
+
+        ''' OLD
         interfaces = lista_interfaces(name)
         if interfaces != None:
             for i in range(1,len(interfaces['nome'])):
@@ -166,6 +185,8 @@ def lista_olts():
                 add_circuito_to_file(circuitos['nome'][i], circuitos['id'][i])
         else:
             print("Nenhuma interface cadasrada nessa OLT.")
+        '''
+
     quit(__DRIVER[0])
 
 def lista_circuito(olt):
@@ -216,6 +237,61 @@ def lista_interfaces(olt):
         interfaces = None
 
     return interfaces
+
+def lista_circuitos_interfaces(olt):
+    __DRIVER[0].get("http://ativacaofibra.redeunifique.com.br/cadastro/interno.php?pg=interno&pg1=outras_verificacoes/ids_cadastrados")
+    __DRIVER[0].find_element_by_xpath('/html/body/div/div/div[2]/table/tbody/tr/td[1]/form/div/div[1]').click()
+    __DRIVER[0].find_element_by_xpath('//*[@id="centro"]/table/tbody/tr/td[1]/form/div/div[1]/input').send_keys(Keys.BACKSPACE)
+    __DRIVER[0].find_element_by_xpath('//*[@id="centro"]/table/tbody/tr/td[1]/form/div/div[1]/input').send_keys(olt)
+    __DRIVER[0].find_element_by_xpath('//*[@id="centro"]/table/tbody/tr/td[1]/form/div/div[1]/input').send_keys(Keys.ENTER)
+
+    data = {"interfaces":[],"circuitos":[]}
+    interfaces = ''
+    circuitos = ''
+
+    try:
+        __DRIVER[0].find_element_by_xpath('/html/body/div/div/div[2]/table/tbody/tr/td[1]/form/input').click()
+    except Exception as e:
+        print(e)
+
+    # interfaces
+    try:
+        __DRIVER[0].find_element_by_xpath("/html/body/div/div/div[2]/table/tbody/tr/td[1]/form/div/div[1]").click()
+        slots = __DRIVER[0].find_element_by_xpath('/html/body/div/div/div[2]/table/tbody/tr/td[1]/form/div/div[2]/div').find_elements_by_class_name('option')
+
+        interfaces = {'nome': [], 'id': []}
+
+        for slot in slots:
+            interfaces['nome'].append(slot.text)
+            interfaces['id'].append(slot.get_attribute('data-value'))
+
+        __DRIVER[0].find_element_by_xpath("/html/body/div/div/div[2]/h2").click()
+
+    except Exception as e:
+        #print(e)
+        print("erro ao consultar interfaces da olt {0}, verificar se existem interfaces nessa olt".format(olt))
+        interfaces = None
+    finally:
+        data['interfaces'].append(interfaces)
+
+    # circuitos
+    try:
+        __DRIVER[0].find_element_by_xpath("/html/body/div/div/div[2]/table/tbody/tr/td[2]/form/div/div[1]").click()
+        circs = __DRIVER[0].find_element_by_xpath('/html/body/div/div/div[2]/table/tbody/tr/td[2]/form/div/div[2]/div').find_elements_by_class_name('option')
+
+        circuitos = {'nome': [], 'id': []}
+
+        for circ in circs:
+            circuitos['nome'].append(circ.text[10:])
+            circuitos['id'].append(circ.get_attribute('data-value'))
+    except Exception as e:
+        #print(e)
+        print("erro aconteceu ao consultar circuitos da olt {0}, verificar se existem circuitos nessa olt".format(olt))
+        circuitos = None
+    finally:
+        data['circuitos'].append(circuitos)
+
+    return data
 
 def quit(driver):
     # close webdriver

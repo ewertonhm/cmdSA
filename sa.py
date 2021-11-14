@@ -9,6 +9,7 @@ from console_theme import *
 import os
 import busca_olt
 from configs import find_path
+from sys import exit
 
 class SistemaAtivacao:
     start_url = 'http://ativacaofibra.redeunifique.com.br/auth.php'

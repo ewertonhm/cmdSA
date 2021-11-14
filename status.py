@@ -107,7 +107,9 @@ def main():
                 print('Para prosseguir é necessário ter o arquivo chromedriver.exe salvo em seu computador')
                 print('O mesmo pode ser baixado em: https://chromedriver.chromium.org/downloads')
                 print('O arquivo deve ser salvo no diretório do script')
-                busca_olt.lista_olts(credenciais.getLogin(), credenciais.getSenha())
+                busca_olt.start_driver()
+                busca_olt.sa_site_login(credenciais.getLogin(), credenciais.getSenha())
+                busca_olt.lista_olts()
         else:
             print('Lista de OLTs (olts.ini) já está criada, gostaria de atualizar a lista? (pode levar vários minutos)')
             resposta = input('y or n:')
@@ -115,9 +117,13 @@ def main():
                 print('Para prosseguir é necessário ter o arquivo chromedriver.exe salvo em seu computador')
                 print('O mesmo pode ser baixado em: https://chromedriver.chromium.org/downloads')
                 print('O arquivo deve ser salvo no diretório do script')
-                busca_olt.lista_olts(credenciais.getLogin(), credenciais.getSenha())
+                busca_olt.start_driver()
+                busca_olt.sa_site_login(credenciais.getLogin(), credenciais.getSenha())
+                busca_olt.lista_olts()
 
     #debbug place:
+
+
 
 if __name__ == '__main__':
     # Debug
