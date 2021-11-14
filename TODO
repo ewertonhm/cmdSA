@@ -13,3 +13,4 @@
 - Verificar VLANs / configs ONU
 - pesquisar circuito por parte do nome - Preparações para implementação na versão 2.8, parcialmente implementado com atributo -all na versão 2.9
 - Automatic Updates (online)
+- Usar ASYNC para agilizar a consulta "SA.print_onus_disponiveis_ativacao"
