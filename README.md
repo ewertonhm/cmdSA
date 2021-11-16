@@ -151,3 +151,38 @@ ou também:
 ```
 status -a UVA_C-1
 ```
+
+## Verificar sinal da ONU/Circuito
+
+### para verificar o sinal de uma ONU específica:
+pelo sn:
+```
+status -sn serial
+```
+pelo pppoe:
+```
+status -p login
+```
+pelo código do cliente:
+```
+status -o olt -cod codigo(s)
+```
+
+### para verificar o sinal de um circuito ou CA:
+Circuito:
+```
+status -sc circuito
+```
+exemplo:
+```
+status -sc BNU-0700A BQE-0644B
+````
+
+Circuito separado por caixa de atendimento:
+```
+status -sca circuito
+```
+exemplo:
+```
+status -sca BNU-0700A
+````
