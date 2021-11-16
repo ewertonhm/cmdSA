@@ -1,7 +1,7 @@
 from bs4 import BeautifulSoup
 import httpx
 
-LOCAL_VERSION = '2.11.0';
+LOCAL_VERSION = '2.12.0';
 
 def get_online_version():
     soup = BeautifulSoup(httpx.get('https://github.com/ewertonhm/cmdSA/releases').text, 'lxml')

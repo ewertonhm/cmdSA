@@ -10,15 +10,13 @@ import os
 import busca_olt
 from configs import find_path
 from sys import exit
+from configs import Credentials
 
 class SistemaAtivacao:
     start_url = 'http://ativacaofibra.redeunifique.com.br/auth.php'
     verificar_status = 'http://ativacaofibra.redeunifique.com.br/cadastro/interno.php?pg=interno&pg1=verificacoes_onu/status'
     outras_verificacoes = 'http://ativacaofibra.redeunifique.com.br/cadastro/interno.php?pg=interno&pg1=outras_verificacoes/ids_cadastrados'
     ids_cadastrados = 'http://ativacaofibra.redeunifique.com.br/cadastro/interno.php?pg=interno&pg1=outras_verificacoes/ids_cadastrados'
-
-
-
 
     def __init__(self, login, senha):
         """
@@ -82,19 +80,24 @@ class SistemaAtivacao:
             f = "{0},{1}".format(f,l)
         return f[1:]
 
-    def verificar_circuitos(self, Circuitos):
+    def verificar_circuitos(self, Circuitos, verf_sinal):
         """
         Recebe uma lista de circuitos, consulta seus IDs no sistema de ativação,
         Passa os IDs para a função print_circuito() executar de forma asyncrona.
         :param Circuitos: Lista de strings com os nomes dos circuitos
+        :param verf_sinal: Boolean que define se irá verificar o sinal do circuito
         :return: Sem retorno
         """
         post = {"circ": self.list_to_array(Circuitos), "pesquisar":"Pesquisar Circuito"}
         soup = BeautifulSoup(self.session.post(self.verificar_status,data=post).text, 'lxml')
         input_tag = soup.find_all(attrs={'name':'circ_id[]'})
 
-        with Executor() as executor:
-            [executor.submit(self.print_circuito,tag) for tag in input_tag]
+        if verf_sinal:
+            with Executor() as executor:
+                [executor.submit(self.print_circuito_sinal, tag) for tag in input_tag]
+        else:
+            with Executor() as executor:
+                [executor.submit(self.print_circuito, tag) for tag in input_tag]
 
     def print_circuito(self,circ_id):
         """
@@ -161,6 +164,74 @@ class SistemaAtivacao:
             self.console.print(table)
             print()
 
+    def print_circuito_sinal(self,circ_id):
+        """
+        recebe um id do circuito, consulta esse circuito no sistema de ativação, monta uma tabela com os dados e imprime na tela.
+
+        :param circ_id: string gerado pela função verificar_circuitos()
+        :return: Exibe na tela
+        """
+        circuito = str(circ_id['value']).split('|')[1]
+        ## create table
+        table = Table(title=circuito)
+
+        session = httpx.Client()
+        auth = {"login": self.login, "senha": self.senha, "acao": self.acao}
+        session.post(self.start_url, data=auth, timeout=30)
+
+        ## get circ_status
+        post = {"circ_id[]": circ_id['value'], "pesquisar": "Status circuito"}
+        soup = BeautifulSoup(session.post(self.verificar_status, data=post, timeout=30).text, 'lxml')
+
+        #soup = BeautifulSoup(self.session.post(self.verificar_status, data=post).text, 'lxml')
+
+        thead = soup.find('thead')
+        try:
+            Header = thead.text.split()
+            table.add_column(Header[0])
+            table.add_column(Header[1])
+            table.add_column(Header[2])
+            table.add_column("Sinal")
+            table.add_column(Header[3])
+            table.add_column(str(Header[4]) + ' ' + str(Header[5]))
+            table.add_column(str(Header[6]) + ' ' + str(Header[7]))
+            table.add_column(str(Header[8]) + ' ' + str(Header[9]))
+
+            tbody = soup.find_all('tbody')
+
+            total = len(tbody)
+            working = 0
+
+            for t in tbody:
+                cs = t.find_all('td')
+
+                sinal = self.verificar_onu_array(cs[3].text)
+
+                link = cs[4].find('a')
+                link = link['href']
+                cod_location = str(link).find('codCliente=')
+
+                btv_link = '[link=' + link + ']' + link[cod_location+11:] + '[/link]'
+                dalo_link = '[link=https://dashboard.redeunifique.com.br/dash_cliente.php?item=' + cs[5].text + ']' + cs[
+                    5].text + '[/link]'
+
+                if cs[2].text == 'working':
+                    ont_status = cs[2].text
+                    working += 1
+                elif cs[2].text == 'LOS':
+                    ont_status = "[disaster]" + cs[2].text + "[/disaster]"
+                else:
+                    ont_status = "[warning]" + cs[2].text + "[/warning]"
+
+                table.add_row(cs[0].text, cs[1].text, ont_status, sinal['sinal'], cs[3].text, btv_link, dalo_link, cs[6].text)
+        except Exception as e:
+            table.add_column(circuito)
+            table.add_row('Circuito não encontrado ou não existem ONUs cadastradas nesse circuito.')
+        finally:
+            table.caption = str('Working: {0}/{1}'.format(working, total))
+            self.console.print(table)
+            print()
+
     def raw_verificar_circuito(self, circuito):
         """
         Consulta um circuito e retorna uma Lista com os valores
@@ -211,6 +282,31 @@ class SistemaAtivacao:
         soup = BeautifulSoup(self.session.post(self.verificar_status, data=post).text, 'lxml')
         status = str().join(soup.find('p').text.splitlines())
         return status
+
+    def verificar_onu_array(self, sn):
+        """
+        Busca o status de um serial number no sistema de ativação e retorna
+        :param sn: String
+        :return: String
+        """
+        ## get status
+        post = {"sn": sn, "pesquisar": "Ver Status"}
+        soup = BeautifulSoup(self.session.post(self.verificar_status, data=post).text, 'lxml')
+        onu = soup.find('p').text.splitlines()
+        sinal = 'N/A'
+        status = 'N/A'
+        try:
+            status_pos = onu[0].find(' está ')
+            status = onu[0][status_pos + 6:]
+
+
+            if status == 'working':
+                sinal_pos = onu[1].find('com sinal ')
+                sinal = onu[1][sinal_pos + 10:]
+        except Exception:
+            pass
+
+        return {"status":status,"sinal":sinal}
 
     def verificar_pppoe_sn_circuito(self, login):
         ## get data
@@ -450,59 +546,31 @@ class SistemaAtivacao:
                     sinal = 'N/A'
                     status = 'N/A'
 
-                    try:
-                        post = {"sn": cs[2].text, "pesquisar": "Ver Status"}
-                        onu = BeautifulSoup(self.session.post(self.verificar_status, data=post).text, 'lxml')
-                        o = onu.find('p').text.splitlines()
+                    onu_status = self.verificar_onu_array(cs[2].text)
 
-                        status_pos = o[0].find(' está ')
-                        status = o[0][status_pos+6:]
+                    sinal = onu_status['sinal']
+                    status = onu_status['status']
 
-                        if status == 'working':
-                            sinal_pos = o[1].find('com sinal ')
-                            sinal = o[1][sinal_pos+10:]
-
-                        table.add_row(
-                            cs[0].text,
-                            cs[1].text,
-                            cs[2].text,
-                            status,
-                            sinal,
-                            btv_link,
-                            dalo_link,
-                            cs[6].text,
-                            # cs[7].text,
-                            # cs[8].text,
-                            # cs[9].text,
-                            # cs[10].text,
-                            # cs[11].text,
-                            cs[12].text,
-                            cs[13].text
-                            # cs[14].text,
-                            # cs[15].text
-                        )
-                        total = total + 1
-                    except Exception:
-                        table.add_row(
-                            cs[0].text,
-                            cs[1].text,
-                            cs[2].text,
-                            status,
-                            sinal,
-                            btv_link,
-                            dalo_link,
-                            cs[6].text,
-                            # cs[7].text,
-                            # cs[8].text,
-                            # cs[9].text,
-                            # cs[10].text,
-                            # cs[11].text,
-                            cs[12].text,
-                            cs[13].text
-                            # cs[14].text,
-                            # cs[15].text
-                        )
-                        total = total + 1
+                    table.add_row(
+                        cs[0].text,
+                        cs[1].text,
+                        cs[2].text,
+                        status,
+                        sinal,
+                        btv_link,
+                        dalo_link,
+                        cs[6].text,
+                        # cs[7].text,
+                        # cs[8].text,
+                        # cs[9].text,
+                        # cs[10].text,
+                        # cs[11].text,
+                        cs[12].text,
+                        cs[13].text
+                        # cs[14].text,
+                        # cs[15].text
+                    )
+                    total = total + 1
         except Exception as e:
             table.add_column(olt)
             table.add_row('ID não encontrado ou não existem ONUs cadastradas com esse ID.')
@@ -521,9 +589,6 @@ class SistemaAtivacao:
                 table.add_row('N/A','N/A','N/A','N/A','N/A','N/A','N/A','N/A')
             self.console.print(table)
             print()
-
-
-
 
     def verificar_status_olt_interface(self, olt, interface):
         title = str('Status ONUs na interface {0}, da OLT {1}:'.format(interface, olt))
@@ -617,13 +682,20 @@ class Integra_SA_ERP:
         })
         self.console = Console(theme=custom_theme)
 
-    def status_ca(self,CAs,StatusClientes):
+    def status_ca(self,CAs,StatusClientes, sinal):
+        s = None
+        if sinal:
+            credenciais = Credentials()
+            s = SistemaAtivacao(credenciais.getLogin(), credenciais.getSenha())
+
         for i in range(len(CAs['Names'])):
             table = Table(title=CAs['Names'][i])
 
             table.add_column(StatusClientes['Header'][0])
             table.add_column(StatusClientes['Header'][1])
             table.add_column(StatusClientes['Header'][2])
+            if sinal:
+                table.add_column("Sinal")
             table.add_column(StatusClientes['Header'][3])
             table.add_column(str(StatusClientes['Header'][4]) + ' ' + str(StatusClientes['Header'][5]))
             table.add_column(str(StatusClientes['Header'][6]) + ' ' + str(StatusClientes['Header'][7]))
@@ -644,7 +716,10 @@ class Integra_SA_ERP:
                             ont_status = "[disaster]" + cs[2].text + "[/disaster]"
                         else:
                             ont_status = "[warning]" + cs[2].text + "[/warning]"
-
-                        table.add_row(cs[0].text, cs[1].text, ont_status, cs[3].text, btv_link, dalo_link, cs[6].text)
+                        if sinal:
+                            sin = s.verificar_onu_array(cs[3].text)
+                            table.add_row(cs[0].text, cs[1].text, ont_status, sin['sinal'], cs[3].text, btv_link, dalo_link, cs[6].text)
+                        else:
+                            table.add_row(cs[0].text, cs[1].text, ont_status, cs[3].text, btv_link, dalo_link, cs[6].text)
             self.console.print(table)
 

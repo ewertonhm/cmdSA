@@ -26,6 +26,8 @@ def main():
     Ativacao = args.getAtivacao()
     AllCircuitos = args.getAllCircuitos()
     Codigos = args.getCodigos()
+    Sinais = args.getSinais()
+    SinaisCaixa = args.getSinaisCaixa()
 
     credenciais = Credentials()
 
@@ -34,7 +36,11 @@ def main():
 
     # status -c
     if type(Circuitos) == list and Circuitos[0] != 'pppoe':
-        s.verificar_circuitos(Circuitos)
+        s.verificar_circuitos(Circuitos, verf_sinal=False)
+
+    # status -sc
+    elif type(Sinais) == list:
+        s.verificar_circuitos(Sinais, verf_sinal=True)
 
     # status -all
     elif type(AllCircuitos) == list and AllCircuitos[0] != 'pppoe':
@@ -67,7 +73,18 @@ def main():
         for circuito in CAs:
             CAs = e.buscar_cas(circuito)
             StatusClientes = s.raw_verificar_circuito(circuito)
-            integra.status_ca(CAs, StatusClientes)
+            integra.status_ca(CAs, StatusClientes, False)
+
+    # status -sca
+    elif type(SinaisCaixa) == list:
+        credenciais.check_erp_credentials()
+        e = Erp(credenciais.getErpLogin(),credenciais.getErpSenha())
+        integra = Integra_SA_ERP()
+
+        for circuito in SinaisCaixa:
+            CAs = e.buscar_cas(circuito)
+            StatusClientes = s.raw_verificar_circuito(circuito)
+            integra.status_ca(CAs, StatusClientes, True)
 
     # status -ip
     elif type(IPs) == list:

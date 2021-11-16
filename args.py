@@ -3,7 +3,7 @@ import argparse
 class Argumentos:
     def __init__(self):
         self.parser = argparse.ArgumentParser(
-            description='Verifica status dos circuitos no Sistema de Ativação.\r\n Criado por Ewerton H. Marschalk')
+            description='Cliente CMD para o Sistema de Ativação.\r\n Criado por Ewerton H. Marschalk')
         self.parser.add_argument('-c', '--circuito', nargs='+')
         self.parser.add_argument('-p', '--pppoe', nargs='+')
         self.parser.add_argument('-ca', '--caixa_atendimento', nargs='+')
@@ -14,6 +14,8 @@ class Argumentos:
         self.parser.add_argument('-a', '--ativacao', nargs='+')
         self.parser.add_argument('-all', '--all_circuitos', nargs='+')
         self.parser.add_argument('-cod', '--codigo', nargs='+')
+        self.parser.add_argument('-sc', '--sinalcircuito', nargs='+')
+        self.parser.add_argument('-sca', '--sinalcaixa', nargs='+')
         args = self.parser.parse_args()
 
         # recuperando parâmetros
@@ -27,6 +29,8 @@ class Argumentos:
         self.ATV = args.ativacao
         self.All = args.all_circuitos
         self.Codigos = args.codigo
+        self.Sinais = args.sinalcircuito
+        self.SinaisCaixa = args.sinalcaixa
 
     def getCircuitos(self):
         return self.Circuitos
@@ -57,3 +61,9 @@ class Argumentos:
 
     def getCodigos(self):
         return self.Codigos
+
+    def getSinais(self):
+        return self.Sinais
+
+    def getSinaisCaixa(self):
+        return self.SinaisCaixa
