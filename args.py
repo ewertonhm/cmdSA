@@ -13,6 +13,7 @@ class Argumentos:
         self.parser.add_argument('-i', '--interface', nargs='+')
         self.parser.add_argument('-a', '--ativacao', nargs='+')
         self.parser.add_argument('-all', '--all_circuitos', nargs='+')
+        self.parser.add_argument('-cod', '--codigo', nargs='+')
         args = self.parser.parse_args()
 
         # recuperando parâmetros
@@ -25,6 +26,7 @@ class Argumentos:
         self.Interfaces = args.interface
         self.ATV = args.ativacao
         self.All = args.all_circuitos
+        self.Codigos = args.codigo
 
     def getCircuitos(self):
         return self.Circuitos
@@ -52,3 +54,6 @@ class Argumentos:
 
     def getAllCircuitos(self):
         return self.All
+
+    def getCodigos(self):
+        return self.Codigos

@@ -25,6 +25,7 @@ def main():
     Interfaces = args.getInterfaces()
     Ativacao = args.getAtivacao()
     AllCircuitos = args.getAllCircuitos()
+    Codigos = args.getCodigos()
 
     credenciais = Credentials()
 
@@ -90,6 +91,10 @@ def main():
         if type(Interfaces) == list:
             for interface in Interfaces:
                 s.verificar_status_olt_interface(OLT[0],interface)
+        # -id
+        elif type(Codigos) == list:
+            for codigo in Codigos:
+                s.verificar_status_id(OLT[0],codigo)
         else:
             s.verificar_status_olt(OLT[0])
 
@@ -122,7 +127,6 @@ def main():
                 busca_olt.lista_olts()
 
     #debbug place:
-
 
 
 if __name__ == '__main__':
