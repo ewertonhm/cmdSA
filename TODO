@@ -6,11 +6,12 @@
 - Buscar por slot - Implementado na versão 2.5
 - Deixar todos os arquivos (credentials e etc) na raiz do script - Implementado na versão 2.7
 - Verificar de qual circuito é uma ONU pedindo autenticação - Implementado na versão 2.8
-- Ver sinal na tela de status
+- Ver sinal na tela de status - Implementado na versão 2.12
+- Deixar a consulta de sinal na tela de status mais rápida. 
 - Salvar output para txt
-- pesquisar por ID do Cliente
+- pesquisar por ID do Cliente - Implementado na versão 2.11
 - Outras Verificações - Verificar ID/SN cadastrados
-- Verificar VLANs / configs ONU
+- Verificar VLANs / configs ONU 
 - pesquisar circuito por parte do nome - Preparações para implementação na versão 2.8, parcialmente implementado com atributo -all na versão 2.9
 - Automatic Updates (online)
 - Usar ASYNC para agilizar a consulta "SA.print_onus_disponiveis_ativacao"
