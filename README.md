@@ -99,7 +99,7 @@ Caso queira gerar uma lista nova ou atualizar a lista (para acrescentar novas OL
 Basta rodar o script status sem argumentos.
 A lista demora vários minutos para ser gerada, e necessita do chromedrive.exe salvo na pasta do script (está incluso no zip apartir da versão 2.7, mas pode não ser compátivel com a versão do seu Google Chrome, se for esse o caso é ncessário baixar uma versão compátivel no endereço: https://chromedriver.chromium.org/downloads, e substituir pela que está lá.)
   
-## Comandos para busca por OLT e/ou Interface:
+## Comandos para busca por OLT e/ou Interface e também pelo código do cliente:
 
 ### para pesquisar o status de todos os slots de uma olt:
 ```
@@ -126,6 +126,16 @@ ou também:
 ```
 status -o VII_C-1 -i 1/2/1 1/2/2 1/2/3
 ```
+
+### para pesquisar clientes através do codigo do bentivi em uma olt:
+```
+status -o olt -cod codigo(s)
+```
+exemplo:
+```
+status -o OLT-GPON-UVA_C-1 -cod 545139
+```
+
 
 ## ONUs disponíveis para ativação e qual circuito elas percentem
 
