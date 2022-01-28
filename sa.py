@@ -11,6 +11,7 @@ import busca_olt
 from configs import find_path
 from sys import exit
 from configs import Credentials
+from future import Future
 
 class SistemaAtivacao:
     start_url = 'http://ativacaofibra.redeunifique.com.br/auth.php'
@@ -23,7 +24,6 @@ class SistemaAtivacao:
         Estância um client da biblioteca httpx
         Tenta realizar o login no sistema de ativação com a função do_login()
         Se não conseguir realizar login, imprime um aviso na tela, exclui o usuário e senha salvos e finaliza
-
         :param login: login do sistema de ativação
         :param senha: senha do sistema de ativação
         """
@@ -48,7 +48,6 @@ class SistemaAtivacao:
     def do_login(self):
         """
         Tenta realizar login no sistema de ativação, caso consiga retona True, do contrário False
-
         :return: boolean
         """
         auth = {"login": self.login, "senha": self.senha, "acao": self.acao}
@@ -61,7 +60,6 @@ class SistemaAtivacao:
     def split(self, a, n):
         """
         TODO: documentar
-
         :param a:
         :param n:
         :return:
@@ -102,7 +100,6 @@ class SistemaAtivacao:
     def print_circuito(self,circ_id):
         """
         recebe um id do circuito, consulta esse circuito no sistema de ativação, monta uma tabela com os dados e imprime na tela.
-
         :param circ_id: string gerado pela função verificar_circuitos()
         :return: Exibe na tela
         """
@@ -147,13 +144,15 @@ class SistemaAtivacao:
                 dalo_link = '[link=https://dashboard.redeunifique.com.br/dash_cliente.php?item=' + cs[5].text + ']' + cs[
                     5].text + '[/link]'
 
-                if cs[2].text == 'working':
-                    ont_status = cs[2].text
+                if cs[2].text.strip() == 'working':
+                    ont_status = cs[2].text.strip()
                     working += 1
-                elif cs[2].text == 'LOS':
-                    ont_status = "[disaster]" + cs[2].text + "[/disaster]"
+                elif cs[2].text.strip() == 'LOS':
+                    ont_status = "[disaster]" + cs[2].text.strip() + "[/disaster]"
+                elif cs[2].text.strip() == 'DyingGasp Sem energia':
+                    ont_status = "[warning]DyingGasp[/warning]"
                 else:
-                    ont_status = "[warning]" + cs[2].text + "[/warning]"
+                    ont_status = "[warning]" + cs[2].text.strip() + "[/warning]"
 
                 table.add_row(cs[0].text, cs[1].text, ont_status, cs[3].text, btv_link, dalo_link, cs[6].text)
         except Exception as e:
@@ -167,7 +166,6 @@ class SistemaAtivacao:
     def print_circuito_sinal(self,circ_id):
         """
         recebe um id do circuito, consulta esse circuito no sistema de ativação, monta uma tabela com os dados e imprime na tela.
-
         :param circ_id: string gerado pela função verificar_circuitos()
         :return: Exibe na tela
         """
@@ -186,6 +184,8 @@ class SistemaAtivacao:
         #soup = BeautifulSoup(self.session.post(self.verificar_status, data=post).text, 'lxml')
 
         thead = soup.find('thead')
+
+
         try:
             Header = thead.text.split()
             table.add_column(Header[0])
@@ -201,29 +201,35 @@ class SistemaAtivacao:
 
             total = len(tbody)
             working = 0
+            sinal = []
 
             for t in tbody:
                 cs = t.find_all('td')
+                sinal.append(Future(self.verificar_onu_array(cs[3].text)))
 
-                sinal = self.verificar_onu_array(cs[3].text)
+            counter = 0
+            print(sinal)
+            for t in tbody:
+                cs = t.find_all('td')
 
                 link = cs[4].find('a')
                 link = link['href']
                 cod_location = str(link).find('codCliente=')
 
                 btv_link = '[link=' + link + ']' + link[cod_location+11:] + '[/link]'
-                dalo_link = '[link=https://dashboard.redeunifique.com.br/dash_cliente.php?item=' + cs[5].text + ']' + cs[
-                    5].text + '[/link]'
-
-                if cs[2].text == 'working':
-                    ont_status = cs[2].text
+                dalo_link = '[link=https://dashboard.redeunifique.com.br/dash_cliente.php?item=' + cs[5].text + ']' + cs[5].text + '[/link]'
+                if cs[2].text.strip() == 'working':
+                    ont_status = cs[2].text.strip()
                     working += 1
-                elif cs[2].text == 'LOS':
-                    ont_status = "[disaster]" + cs[2].text + "[/disaster]"
+                elif cs[2].text.strip() == 'LOS':
+                    ont_status = "[disaster]" + cs[2].text.strip() + "[/disaster]"
                 else:
-                    ont_status = "[warning]" + cs[2].text + "[/warning]"
+                    ont_status = "[warning]" + cs[2].text.strip() + "[/warning]"
 
-                table.add_row(cs[0].text, cs[1].text, ont_status, sinal['sinal'], cs[3].text, btv_link, dalo_link, cs[6].text)
+                print(sinal[counter])
+                #table.add_row(cs[0].text, cs[1].text, ont_status, sinal[counter]()['sinal'], cs[3].text, btv_link, dalo_link, cs[6].text)
+                counter = counter+1
+
         except Exception as e:
             table.add_column(circuito)
             table.add_row('Circuito não encontrado ou não existem ONUs cadastradas nesse circuito.')
@@ -260,7 +266,7 @@ class SistemaAtivacao:
 
             SC = {'Header':Header,'Status':StatusClientes}
             return SC
-
+    '''
     def paralel_verificar_circuito(self, Circuitos):
         """
         TODO: verificar se ainda é utilizado em alguma parte do código
@@ -270,6 +276,7 @@ class SistemaAtivacao:
         threads = min(self.MAX_THREADS, len(Circuitos))
         with concurrent.futures.ThreadPoolExecutor(max_workers=threads) as executor:
             executor.map(self.verificar_circuito, Circuitos)
+    '''
 
     def verificar_onu(self, sn):
         """
@@ -385,7 +392,6 @@ class SistemaAtivacao:
     def get_circuit_ids(self, olt):
         """
         Recebe o nome de uma OLT e retorna o circ_id de todos os cricuitos dessa OLT
-
         :param olt: String com o nome da OLT
         :return: Lista com os circ_ids
         """
@@ -425,7 +431,6 @@ class SistemaAtivacao:
         """
         http://ativacaofibra.redeunifique.com.br/cadastro/interno.php?pg=interno&pg1=novos_cadastros/ativar_onu
         Verifica se existe alguma ONU disponível para ativação no circuito.
-
         :param circ_id:
         :return:
         """
@@ -578,7 +583,6 @@ class SistemaAtivacao:
             print('#' * 20)
             pprint.pprint(e)
             pprint.pprint(thead)
-
             print('#' * 20)
             pprint.pprint(soup)
             print('#' * 20)
@@ -661,7 +665,6 @@ class SistemaAtivacao:
             print('#' * 20)
             pprint.pprint(e)
             pprint.pprint(thead)
-
             print('#' * 20)
             pprint.pprint(soup)
             print('#' * 20)
@@ -722,4 +725,3 @@ class Integra_SA_ERP:
                         else:
                             table.add_row(cs[0].text, cs[1].text, ont_status, cs[3].text, btv_link, dalo_link, cs[6].text)
             self.console.print(table)
-
