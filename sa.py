@@ -223,6 +223,8 @@ class SistemaAtivacao:
                     working += 1
                 elif cs[2].text.strip() == 'LOS':
                     ont_status = "[disaster]" + cs[2].text.strip() + "[/disaster]"
+                elif cs[2].text.strip() == 'DyingGasp Sem energia':
+                    ont_status = "[warning]DyingGasp[/warning]"
                 else:
                     ont_status = "[warning]" + cs[2].text.strip() + "[/warning]"
 
@@ -649,13 +651,15 @@ class SistemaAtivacao:
                 dalo_link = '[link=https://dashboard.redeunifique.com.br/dash_cliente.php?item=' + cs[5].text + ']' + cs[
                     5].text + '[/link]'
 
-                if cs[2].text == 'working':
-                    ont_status = cs[2].text
+                if cs[2].text.strip() == 'working':
+                    ont_status = cs[2].text.strip()
                     working += 1
-                elif cs[2].text == 'LOS':
-                    ont_status = "[disaster]" + cs[2].text + "[/disaster]"
+                elif cs[2].text.strip() == 'LOS':
+                    ont_status = "[disaster]" + cs[2].text.strip() + "[/disaster]"
+                elif cs[2].text.strip() == 'DyingGasp Sem energia':
+                    ont_status = "[warning]DyingGasp[/warning]"
                 else:
-                    ont_status = "[warning]" + cs[2].text + "[/warning]"
+                    ont_status = "[warning]" + cs[2].text.strip() + "[/warning]"
 
                 table.add_row(cs[0].text, cs[1].text, ont_status, cs[3].text, btv_link, dalo_link, cs[6].text, cs[8].text)
         except Exception as e:
@@ -713,12 +717,14 @@ class Integra_SA_ERP:
                         btv_link = '[link=' + link + ']' + link[cod_location+11:] + '[/link]'
                         dalo_link = '[link=https://dashboard.redeunifique.com.br/dash_cliente.php?item=' + cs[5].text + ']' + cs[5].text + '[/link]'
 
-                        if cs[2].text == 'working':
-                            ont_status = cs[2].text
-                        elif cs[2].text == 'LOS':
-                            ont_status = "[disaster]" + cs[2].text + "[/disaster]"
+                        if cs[2].text.strip() == 'working':
+                            ont_status = cs[2].text.strip()
+                        elif cs[2].text.strip() == 'LOS':
+                            ont_status = "[disaster]" + cs[2].text.strip() + "[/disaster]"
+                        elif cs[2].text.strip() == 'DyingGasp Sem energia':
+                            ont_status = "[warning]DyingGasp[/warning]"
                         else:
-                            ont_status = "[warning]" + cs[2].text + "[/warning]"
+                            ont_status = "[warning]" + cs[2].text.strip() + "[/warning]"
                         if sinal:
                             sin = s.verificar_onu_array(cs[3].text)
                             table.add_row(cs[0].text, cs[1].text, ont_status, sin['sinal'], cs[3].text, btv_link, dalo_link, cs[6].text)
