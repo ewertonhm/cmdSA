@@ -1,15 +1,10 @@
 from bs4 import BeautifulSoup
 import httpx
 from rich.table import Table
-from concurrent.futures.thread import ThreadPoolExecutor as Executor
 import concurrent.futures
-from conf.console_theme import *
-import os
 import SA.busca_olt as busca_olt
-from conf.configs import find_path, Credentials
-from sys import exit
-from concurrent.futures import Future
 from SA.sa_base import SA
+from SA.status_onu import StatusOnu
 
 
 # import time
@@ -28,7 +23,7 @@ class StatusOlt(SA):
         url = "http://ativacaofibra.redeunifique.com.br/cadastro/interno.php?pg=interno&pg1=novos_cadastros/ativar_onu"
         circuito = self.reorganize_circ_id_ativ(circ_id)
         post = {"circ_id": circuito, "botao": "Verificar ONU disponíveis para ativação "}
-        soup = BeautifulSoup(self.session.post(url, data=post).text, 'lxml')
+        soup = BeautifulSoup(self.session.post(url, data=post, timeout=30).text, 'lxml')
 
         form = soup.find('form', attrs={'name': 'aa'})
         onus = form.find_all('option')
@@ -37,19 +32,75 @@ class StatusOlt(SA):
             uncg_onus.append(onu.text)
         return uncg_onus
 
+    def get_circuit_ids(self, olt):
+        """
+        Recebe o nome de uma OLT e retorna o circ_id de todos os cricuitos dessa OLT
+        :param olt: String com o nome da OLT
+        :return: Lista com os circ_ids
+        """
+        db_olts = busca_olt.OLTs()
+        circuitos = db_olts.get_olt_circuitos(olt)
+        Circuitos = []
+        for circuito in circuitos:
+            Circuitos.append(circuito[0])
+
+        post = {"circ": self.list_to_array(Circuitos), "pesquisar": "Pesquisar Circuito"}
+        soup = BeautifulSoup(self.session.post(self.verificar_status, data=post).text, 'lxml')
+        input_tag = soup.find_all(attrs={'name': 'circ_id[]'})
+
+        circ_ids = []
+        for c in input_tag:
+            circ_ids.append(c['value'])
+        return circ_ids
+
+    def reorganize_circ_id_ativ(self, circ_id):
+        """
+        reorganiza o circ_id coletado no status para ser usado na ativação
+        :param circ_id: String
+        :return: String
+        """
+        dados = circ_id.split("|")
+        circ_id = dados[0]
+        circ_name = dados[1]
+        olt_id = dados[2]
+        slot = dados[3]
+        slot_id = dados[4]
+
+        dados_new = '{0}|{1}|{2}|{3}|{4}|ativo'.format(olt_id, slot_id, circ_name, slot, circ_id)
+
+        return dados_new
+
     def print_onus_disponiveis_ativacao(self, olt):
         table = Table(title="ONU disponíveis para ativação na OLT: {0}.".format(olt))
-
         circuitos = self.get_circuit_ids(olt)
         if len(circuitos)>0:
             table.add_column('ONU')
             table.add_column('Circuito')
 
+            data = {
+                "index": [],
+                "thread": [],
+                "circuito_id": [],
+                "circuito": []
+            }
+            counter = 0
             for circuito in circuitos:
-                uncf_onus = self.verificar_onus_disponiveis_ativacao_circuito(circuito)
                 circ = circuito.split('|')
-                for onu in uncf_onus:
-                    table.add_row(onu,circ[1])
+                data['index'].append(counter)
+                data['circuito_id'].append(circuito)
+                data['circuito'].append(circ[1])
+
+                with concurrent.futures.ThreadPoolExecutor() as executor:
+                    data['thread'].append(executor.submit(self.verificar_onus_disponiveis_ativacao_circuito, circuito))
+
+                counter = counter+1
+
+            for index in data['index']:
+                uncf_onu = data['thread'][index].result()
+                if len(uncf_onu)>0:
+                    for onu in uncf_onu:
+                        table.add_row(onu, data['circuito'][index])
+
         else:
             table.add_row('Não há ONU sem configuração.')
 

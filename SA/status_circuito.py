@@ -228,44 +228,10 @@ class StatusCircuito(SA):
         return circuito
 
     '''
-    def get_circuit_ids(self, olt):
-        """
-        Recebe o nome de uma OLT e retorna o circ_id de todos os cricuitos dessa OLT
-        :param olt: String com o nome da OLT
-        :return: Lista com os circ_ids
-        """
-        db_olts = busca_olt.OLTs()
-        circuitos = db_olts.get_olt_circuitos(olt)
-        Circuitos = []
-        for circuito in circuitos:
-            Circuitos.append(circuito[0])
 
-        post = {"circ": self.list_to_array(Circuitos), "pesquisar": "Pesquisar Circuito"}
-        soup = BeautifulSoup(self.session.post(self.verificar_status, data=post).text, 'lxml')
-        input_tag = soup.find_all(attrs={'name': 'circ_id[]'})
-
-        circ_ids = []
-        for c in input_tag:
-            circ_ids.append(c['value'])
-        return circ_ids
     '''
 
     '''
-    def reorganize_circ_id_ativ(self, circ_id):
-        """
-        reorganiza o circ_id coletado no status para ser usado na ativação
-        :param circ_id: String
-        :return: String
-        """
-        dados = circ_id.split("|")
-        circ_id = dados[0]
-        circ_name = dados[1]
-        olt_id = dados[2]
-        slot = dados[3]
-        slot_id = dados[4]
 
-        dados_new = '{0}|{1}|{2}|{3}|{4}|ativo'.format(olt_id, slot_id, circ_name, slot, circ_id)
-
-        return dados_new
     '''
 
