@@ -1,21 +1,17 @@
 from SA import busca_olt
-from SA.sa import SistemaAtivacao, Integra_SA_ERP
+from SA.status_circuito import StatusCircuito
+from SA.status_onu import StatusOnu
+from SA.integra_erp_sa import Integra_SA_ERP
 from SA.circuit_search import BuscaCircuito
-
 from args import Argumentos
 from conf import version_control
 from conf.configs import Credentials, find_path
-
 from Bemtevi.erp import Erp
-from Netbox.netbox import NetBox
-
-import threading
 import os.path
 
-# import asyncio
-# import getpass
-# import sys
 # from datetime import datetime
+
+# from pprint import pprint
 
 
 def main():
@@ -35,19 +31,20 @@ def main():
 
     credenciais = Credentials()
 
-    s = SistemaAtivacao(credenciais.getLogin(), credenciais.getSenha())
-
 
     # status -c
     if type(Circuitos) == list and Circuitos[0] != 'pppoe':
+        s = StatusCircuito(credenciais.getLogin(), credenciais.getSenha())
         s.verificar_circuitos(Circuitos, verf_sinal=False)
 
     # status -sc
     elif type(Sinais) == list:
+        s = StatusCircuito(credenciais.getLogin(), credenciais.getSenha())
         s.verificar_circuitos(Sinais, verf_sinal=True)
 
     # status -all
     elif type(AllCircuitos) == list and AllCircuitos[0] != 'pppoe':
+        s = StatusCircuito(credenciais.getLogin(), credenciais.getSenha())
         c = BuscaCircuito()
         search_term = []
         for circ in AllCircuitos:
@@ -59,6 +56,7 @@ def main():
 
     # status -c pppoe -p
     elif type(Logins) == list and type(Circuitos) == list and Circuitos[0] == 'pppoe':
+        s = StatusCircuito(credenciais.getLogin(), credenciais.getSenha())
         for login in Logins:
             circuito = s.verificar_status_login_get_circuito(login)
 
@@ -66,10 +64,12 @@ def main():
                 s.verificar_circuitos([circuito], verf_sinal=False)
     # status -p
     elif type(Logins) == list and type(Circuitos) != list:
-        s.paralel_verificar_status_login(Logins)
+        s = StatusOnu(credenciais.getLogin(), credenciais.getSenha())
+        s.paralel_get_status_login(Logins)
 
     # status -ca
     elif type(CAs) == list:
+        s = StatusCircuito(credenciais.getLogin(), credenciais.getSenha())
         credenciais.check_erp_credentials()
         e = Erp(credenciais.getErpLogin(),credenciais.getErpSenha())
         integra = Integra_SA_ERP()
@@ -81,6 +81,8 @@ def main():
 
     # status -sca
     elif type(SinaisCaixa) == list:
+        s = StatusCircuito(credenciais.getLogin(), credenciais.getSenha())
+        o = StatusOnu(credenciais.getLogin(), credenciais.getSenha())
         credenciais.check_erp_credentials()
         e = Erp(credenciais.getErpLogin(),credenciais.getErpSenha())
         integra = Integra_SA_ERP()
@@ -88,7 +90,8 @@ def main():
         for circuito in SinaisCaixa:
             CAs = e.buscar_cas(circuito)
             StatusClientes = s.raw_verificar_circuito(circuito)
-            integra.status_ca(CAs, StatusClientes, True)
+            Sinais = o.paralel_get_status_sn(StatusClientes['Seriais'])
+            integra.status_ca(CAs, StatusClientes, Sinais)
 
     # status -ip
     # elif type(IPs) == list:
@@ -103,11 +106,13 @@ def main():
 
     # status -sn
     elif type(SNs) == list:
+        s = StatusOnu(credenciais.getLogin(), credenciais.getSenha())
         for sn in SNs:
-            s.verificar_status_sn(sn)
+            s.get_status_sn(sn)
 
     # status -o
     elif type(OLT) == list:
+        s = StatusCircuito(credenciais.getLogin(), credenciais.getSenha())
         # -i
         if type(Interfaces) == list:
             for interface in Interfaces:
@@ -121,6 +126,7 @@ def main():
 
     # status -a
     elif type(Ativacao) == list:
+        s = StatusCircuito(credenciais.getLogin(), credenciais.getSenha())
         s.print_onus_disponiveis_ativacao(Ativacao[0])
 
     # no option set
