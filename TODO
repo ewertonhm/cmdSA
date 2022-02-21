@@ -7,7 +7,7 @@
 - Deixar todos os arquivos (credentials e etc) na raiz do script - Implementado na versão 2.7
 - Verificar de qual circuito é uma ONU pedindo autenticação - Implementado na versão 2.8
 - Ver sinal na tela de status - Implementado na versão 2.12
-- Deixar a consulta de sinal na tela de status mais rápida. 
+- Deixar a consulta de sinal na tela de status mais rápida. - Implementado na versão 3.0
 - Salvar output para txt
 - pesquisar por ID do Cliente - Implementado na versão 2.11
 - Outras Verificações - Verificar ID/SN cadastrados
