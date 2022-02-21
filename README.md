@@ -81,15 +81,6 @@ exemplo:
 status -c pppoe -p 519171
 ```
 
-### para pesquisar informações de um ou vários IPs no netbox, utilize:
-```
-status -ip ipaddress
-```
-exemplo:
-```
-status -ip 186.227.140.100 186.227.140.112
-```
-
 ## Status por OLT e/ou Interface de OLT:
 
 Para realizar buscas por OLT ou Slot é necessário ter a lista de IDs das OLTs e Slots,
