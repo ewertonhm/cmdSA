@@ -1,7 +1,7 @@
 from bs4 import BeautifulSoup
 import httpx
 
-LOCAL_VERSION = '2.12.2';
+LOCAL_VERSION = '3.0';
 
 def get_online_version():
     try:
@@ -13,4 +13,3 @@ def get_online_version():
                 "Uma nova versão do script está disponível para baixar em: https://github.com/ewertonhm/cmdSA/releases")
     except Exception as e:
         print("Não foi possível verificar se existem atualizações disponíveis")
-

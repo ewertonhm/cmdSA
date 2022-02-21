@@ -125,4 +125,3 @@ class Credentials:
         password = password.decode('utf-8')
         password = password.strip()
         return password
-

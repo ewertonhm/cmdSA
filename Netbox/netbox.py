@@ -1,23 +1,30 @@
 import httpx
 from bs4 import BeautifulSoup
-from console_theme import *
+from conf.console_theme import *
 from rich.table import Table
+from pprint import pprint
 
+'''
+NOT WORKING,
+refazer usando API:
+https://netbox.readthedocs.io/en/stable/rest-api/overview/
+'''
 
 class NetBox:
     LOGIN_PAGE = 'http://netbox.cgr.unifique.net/login/?next=/'
     SEARCH_ADDRESS = 'http://netbox.cgr.unifique.net/search/?q='
 
     def __init__(self, usuario, senha):
-        self.session = httpx.Client()
+        self.session = httpx.Client(follow_redirects=True)
         soup = BeautifulSoup(self.session.get(self.LOGIN_PAGE).text, 'lxml')
         token = soup.find("input", {"name":"csrfmiddlewaretoken"})['value']
 
         post = {"csrfmiddlewaretoken":token, "next":"/","username":usuario,"password":senha}
         try:
             logged = BeautifulSoup(self.session.post(self.LOGIN_PAGE,data=post).text, 'lxml')
-            logged = logged.find("div", {"class":"alert-dismissable"}).text
-        except Exception:
+            logged = logged.find("span", {"id":"navbar_user"}).text
+        except Exception as e:
+            print(e)
             print('Falha no login')
 
         if not logged.find('Logged'):
@@ -74,4 +81,3 @@ class NetBox:
             for line in lines:
                 t.add_row(str(line.find_all('td')[0].text).strip(),str(line.find_all('td')[5].text).strip(),str(line.find_all('td')[7].text).strip(),str(line.find_all('td')[8].text).strip())
             CONSOLE.print(t)
-

@@ -1,17 +1,21 @@
-from datetime import datetime
-from sa import SistemaAtivacao, Integra_SA_ERP
+from SA import busca_olt
+from SA.sa import SistemaAtivacao, Integra_SA_ERP
+from SA.circuit_search import BuscaCircuito
+
 from args import Argumentos
-from configs import Credentials, find_path
-from btv import Erp
-from netbox import NetBox
-import asyncio
+from conf import version_control
+from conf.configs import Credentials, find_path
+
+from Bemtevi.erp import Erp
+from Netbox.netbox import NetBox
+
 import threading
-import getpass
-import busca_olt
 import os.path
-import sys
-import version_control
-from circuit_search import BuscaCircuito
+
+# import asyncio
+# import getpass
+# import sys
+# from datetime import datetime
 
 
 def main():
@@ -19,7 +23,7 @@ def main():
     Circuitos = args.getCircuitos()
     Logins = args.getLogins()
     CAs = args.getCAs()
-    IPs = args.getIPs()
+    # IPs = args.getIPs()
     SNs = args.getSNs()
     OLT = args.getOLT()
     Interfaces = args.getInterfaces()
@@ -32,7 +36,7 @@ def main():
     credenciais = Credentials()
 
     s = SistemaAtivacao(credenciais.getLogin(), credenciais.getSenha())
-    #s.verificar_circuitos_id(['JVE-1346A','JVE-1347A','JVE-1347B'])
+
 
     # status -c
     if type(Circuitos) == list and Circuitos[0] != 'pppoe':
@@ -51,7 +55,7 @@ def main():
             for r in result:
                 search_term.append(r)
         print(f'Circuitos encontrados: {search_term}')
-        s.verificar_circuitos(search_term)
+        s.verificar_circuitos(search_term, verf_sinal=False)
 
     # status -c pppoe -p
     elif type(Logins) == list and type(Circuitos) == list and Circuitos[0] == 'pppoe':
@@ -59,7 +63,7 @@ def main():
             circuito = s.verificar_status_login_get_circuito(login)
 
             if circuito != False:
-                s.verificar_circuitos([circuito])
+                s.verificar_circuitos([circuito], verf_sinal=False)
     # status -p
     elif type(Logins) == list and type(Circuitos) != list:
         s.paralel_verificar_status_login(Logins)
@@ -87,15 +91,15 @@ def main():
             integra.status_ca(CAs, StatusClientes, True)
 
     # status -ip
-    elif type(IPs) == list:
-        n = NetBox(credenciais.getLogin()[:-20],credenciais.getSenha())
-        threads = []
-        for i in range(len(IPs)):
-            threads.append(threading.Thread(target=n.search_ip,args=(IPs[i],)))
-            threads[i].start()
-
-        for th in threads:
-            if th.is_alive(): th.join()
+    # elif type(IPs) == list:
+    #    n = NetBox(credenciais.getLogin()[:-20],credenciais.getSenha())
+    #    threads = []
+    #    for i in range(len(IPs)):
+    #        threads.append(threading.Thread(target=n.search_ip,args=(IPs[i],)))
+    #        threads[i].start()
+    #
+    #    for th in threads:
+    #        if th.is_alive(): th.join()
 
     # status -sn
     elif type(SNs) == list:
@@ -157,6 +161,3 @@ if __name__ == '__main__':
     #stats.print_stats()
     # Debug
     #print("Tempo de execução:", datetime.now() - begin_time)
-
-
-

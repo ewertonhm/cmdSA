@@ -62,12 +62,3 @@ class Erp:
             position = str(link['href']).find('codCliente=')
             IDs.append(link['href'][position+11:-2])
         return IDs
-
-
-class Bemtevi:
-    BTV_LOGIN = 'http://tio.redeunifique.com.br/login/index.php'
-
-    def __init__(self):
-        pass
-
-

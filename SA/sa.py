@@ -1,17 +1,18 @@
 from bs4 import BeautifulSoup
 import httpx
 from rich.table import Table
-from rich import style
 from concurrent.futures.thread import ThreadPoolExecutor as Executor
-import time
 import concurrent.futures
-from console_theme import *
+from conf.console_theme import *
 import os
-import busca_olt
-from configs import find_path
+import SA.busca_olt as busca_olt
+from conf.configs import find_path, Credentials
 from sys import exit
-from configs import Credentials
-from future import Future
+from concurrent.futures import Future
+
+# import time
+# from rich import style
+from pprint import pprint
 
 class SistemaAtivacao:
     start_url = 'http://ativacaofibra.redeunifique.com.br/auth.php'
@@ -31,7 +32,7 @@ class SistemaAtivacao:
         self.senha = senha
         self.acao = 'Entrar'
 
-        self.session = httpx.Client()
+        self.session = httpx.Client(follow_redirects=True)
 
         logged = self.do_login()
 
@@ -51,11 +52,13 @@ class SistemaAtivacao:
         :return: boolean
         """
         auth = {"login": self.login, "senha": self.senha, "acao": self.acao}
-        soup = BeautifulSoup(self.session.post(self.start_url, data=auth).text, 'lxml')
+        response = self.session.post(self.start_url, data=auth)
+        soup = BeautifulSoup(response.text, 'lxml')
         if soup.find(id='logout') != None:
             return True
         else:
             return False
+
 
     def split(self, a, n):
         """

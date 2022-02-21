@@ -3,7 +3,11 @@ from cx_Freeze import setup, Executable
 
 # Dependencies are automatically detected, but it might need fine tuning.
 # "packages": ["os"] is used as example only
-build_exe_options = {"packages": ["os"], "excludes": ["tkinter"]}
+build_exe_options = {
+    "packages": ["os"],
+    "excludes": ["tkinter"],
+    "includes": ["Bemtevi", "conf", "Netbox", "SA"]
+}
 
 # base="Win32GUI" should be used only for Windows GUI app
 base = None
@@ -13,8 +17,8 @@ base = None
 
 setup(
     name = "Status",
-    version = "0.1",
+    version = "3.0",
     description = "Verifica status dos circuitos!",
     options = {"build_exe": build_exe_options},
-    executables = [Executable("status.py", base=base)]
+    executables = [Executable("main.py", base=base)]
 )

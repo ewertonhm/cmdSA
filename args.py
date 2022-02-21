@@ -7,7 +7,7 @@ class Argumentos:
         self.parser.add_argument('-c', '--circuito', nargs='+')
         self.parser.add_argument('-p', '--pppoe', nargs='+')
         self.parser.add_argument('-ca', '--caixa_atendimento', nargs='+')
-        self.parser.add_argument('-ip', '--ip', nargs='+')
+        # self.parser.add_argument('-ip', '--ip', nargs='+')
         self.parser.add_argument('-sn', '--serial', nargs='+')
         self.parser.add_argument('-o', '--olt', nargs='+')
         self.parser.add_argument('-i', '--interface', nargs='+')
@@ -22,7 +22,7 @@ class Argumentos:
         self.Circuitos = args.circuito
         self.Logins = args.pppoe
         self.CAs = args.caixa_atendimento
-        self.IPs = args.ip
+        # self.IPs = args.ip
         self.SNs = args.serial
         self.OLT = args.olt
         self.Interfaces = args.interface
