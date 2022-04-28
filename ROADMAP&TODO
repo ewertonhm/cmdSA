@@ -1,0 +1,50 @@
+
+PLANED TO THE NEXT UPDATE:
+- Adicionar a lista de CIRCUITOS e OLTS em um MongoDB Atlas e acessar via cloud
+- Criar uma rotino no prefect flow para atualizar a lista de circuitos e olts automáticamente
+
+LATER-ON:
+- Automatic Updates (online)
+- Usar ASYNC para agilizar a consulta "SA.print_onus_disponiveis_ativacao"
+- Salvar output para txt
+- Outras Verificações - Verificar ID/SN cadastrados
+- Verificar VLANs / configs ONU
+
+
+Implementado na versão 1.2:
+- Buscar status de um login
+
+ Implementado na versão 2.0:
+- Deixar as buscar mais rápidas
+- Preencher interativamente os dados de credencial
+
+ Implementado na versão 2.2:
+- Listar circuito por caixas de atendimento
+
+Implementado na versão 2.4.1:
+- Buscar por SN 
+
+Implementado na versão 2.5:
+- Buscar por slot 
+
+Implementado na versão 2.7:
+- Deixar todos os arquivos (credentials e etc) na raiz do script
+
+Implementado na versão 2.8:
+- Verificar de qual circuito é uma ONU pedindo autenticação 
+
+Implementado na versão 2.9:
+- pesquisar circuito por parte do nome 
+
+Implementado na versão 2.11:
+- pesquisar por ID do Cliente - 
+
+Implementado na versão 2.12:
+- Ver sinal na tela de status 
+
+Implementado na versão 3.0:
+- Deixar a consulta de sinal na tela de status mais rápida. - 
+
+
+
+
