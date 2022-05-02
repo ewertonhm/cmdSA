@@ -1,7 +1,11 @@
 
 PLANED TO THE NEXT UPDATE:
-- Adicionar a lista de CIRCUITOS e OLTS em um MongoDB Atlas e acessar via cloud
-- Criar uma rotino no prefect flow para atualizar a lista de circuitos e olts automáticamente
+- Criar uma rotino no prefect flow para atualizar a lista de circuitos e olts automáticamente.
+- Buscar a ultima versão disponível no mongodb ao invés de coletar no github.
+
+BUGS Conhecidos:
+- Script está sempre exibindo que uma nova versão está disponível, mesmo quando está na ultima versão.
+- Comandos -ca e -sca, que buscam clientes por CA, não exibe clientes que não tem CA documentada no bentivi.
 
 LATER-ON:
 - Automatic Updates (online)
@@ -43,7 +47,10 @@ Implementado na versão 2.12:
 - Ver sinal na tela de status 
 
 Implementado na versão 3.0:
-- Deixar a consulta de sinal na tela de status mais rápida. - 
+- Deixar a consulta de sinal na tela de status mais rápida. -
+
+Impementado na versão 3.1:
+- Adicionar a lista de CIRCUITOS e OLTS em um MongoDB Atlas e acessar via cloud
 
 
 
