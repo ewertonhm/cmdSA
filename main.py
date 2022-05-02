@@ -3,6 +3,7 @@ from SA.status_circuito import StatusCircuito
 from SA.status_onu import StatusOnu
 from SA.integra_erp_sa import Integra_SA_ERP
 from SA.circuit_search import BuscaCircuito
+from SA.status_olt import StatusOlt
 from args import Argumentos
 from conf import version_control
 from conf.configs import Credentials, find_path
@@ -50,7 +51,7 @@ def main():
         for circ in AllCircuitos:
             result = c.search_circuit(circ)
             for r in result:
-                search_term.append(r)
+                search_term.append(r['circuito'])
         print(f'Circuitos encontrados: {search_term}')
         s.verificar_circuitos(search_term, verf_sinal=False)
 
@@ -112,7 +113,7 @@ def main():
 
     # status -o
     elif type(OLT) == list:
-        s = StatusCircuito(credenciais.getLogin(), credenciais.getSenha())
+        s = StatusOlt(credenciais.getLogin(), credenciais.getSenha())
         # -i
         if type(Interfaces) == list:
             for interface in Interfaces:
@@ -126,7 +127,7 @@ def main():
 
     # status -a
     elif type(Ativacao) == list:
-        s = StatusCircuito(credenciais.getLogin(), credenciais.getSenha())
+        s = StatusOlt(credenciais.getLogin(), credenciais.getSenha())
         s.print_onus_disponiveis_ativacao(Ativacao[0])
 
     # no option set

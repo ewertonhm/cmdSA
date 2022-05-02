@@ -8,66 +8,8 @@ import pathlib
 import inspect
 from conf.configs import find_path
 from tqdm import tqdm
-
+from Database import mongodb
 __DRIVER = []
-
-def create_olt_file():
-    path = find_path()
-    filename = path + 'olts.ini'
-    f=open(filename, "w")
-    f.close()
-
-def create_circuitos_file():
-    path = find_path()
-    filename = path + 'circuitos.ini'
-    f=open(filename, "w")
-    f.close()
-    write_to_circuitos_file('[circuitos]')
-
-def write_to_circuitos_file(string):
-    path = find_path()
-    filename = path + 'circuitos.ini'
-
-    # Open the file in append & read mode ('a+')
-    with open(filename, "a+") as file_object:
-        # Move read cursor to the start of file.
-        file_object.seek(0)
-        # If file is not empty then append '\n'
-        data = file_object.read(100)
-        if len(data) > 0:
-            file_object.write("\n")
-        # Append text at the end of file
-        file_object.write(string)
-
-def write_to_olt_file(string):
-    path = find_path()
-    filename = path + 'olts.ini'
-
-    # Open the file in append & read mode ('a+')
-    with open(filename, "a+") as file_object:
-        # Move read cursor to the start of file.
-        file_object.seek(0)
-        # If file is not empty then append '\n'
-        data = file_object.read(100)
-        if len(data) > 0:
-            file_object.write("\n")
-        # Append text at the end of file
-        file_object.write(string)
-
-def add_olt_to_file(olt_name,olt_id):
-    write_to_olt_file('[{0}]'.format(olt_name))
-    write_to_olt_file('id:' + olt_id)
-
-def add_slots_to_file(slot,id):
-    write_to_olt_file('{0}:{1}'.format(slot,id))
-
-def add_olt_circuitos_to_file(olt_name):
-    write_to_olt_file('[CIRCUITOS-{0}]'.format(olt_name))
-
-def add_circuito_to_file(circuito,id):
-    write_to_olt_file('{0}:{1}'.format(circuito, id))
-    write_to_circuitos_file('{0}:{1}'.format(circuito, id))
-
 
 def start_driver():
     path = find_path()
@@ -127,6 +69,7 @@ def lista_olts():
 
     print('Criando lista de OLTs... aguarde...')
 
+
     __DRIVER[0].get("http://ativacaofibra.redeunifique.com.br/cadastro/interno.php?pg=interno&pg1=verificacoes_onu/status")
     __DRIVER[0].find_element(By.XPATH, '/html/body/div/div/div[2]/table/tbody/tr/td[1]/form/div/div[1]').click()
     lista = __DRIVER[0].find_element(By.XPATH, '/html/body/div/div/div[2]/table/tbody/tr/td[1]/form/div/div[2]/div')
@@ -136,52 +79,37 @@ def lista_olts():
         data['name'].append(olt.text)
         data['id'].append(olt.get_attribute('data-value'))
 
-    create_olt_file()
-    create_circuitos_file()
-
     olt_count = len(data['name'])
 
+    # clean collection
+    mongodb.drop_collection('olts')
+
     for i in tqdm(range(0, olt_count), unit='olt'):
-        name = data['name'][i]
-        id = data['id'][i]
+        json = {
+            "name": data['name'][i],
+            "id": data['id'][i],
+            "interfaces": [],
+            "circuitos": []
+        }
 
-        #print("OLT:{0}, id={1}".format(name, id))
 
-        add_olt_to_file(name,id)
 
-        ci = lista_circuitos_interfaces(name)
+        ci = lista_circuitos_interfaces(json['name'])
 
         if ci['interfaces'][0] != None:
             for i in range(0, len(ci['interfaces'][0]['nome'])):
                 #print("Interface:{0}, id={1}".format(ci['interfaces'][0]['nome'][i], ci['interfaces'][0]['id'][i]))
-                add_slots_to_file(ci['interfaces'][0]['nome'][i], ci['interfaces'][0]['id'][i])
+                #add_slots_to_file(ci['interfaces'][0]['nome'][i], ci['interfaces'][0]['id'][i])
+                json['interfaces'].append({"nome":ci['interfaces'][0]['nome'][i],"id":ci['interfaces'][0]['id'][i]})
 
-
-        add_olt_circuitos_to_file(name)
 
         if ci['circuitos'][0] != None:
             for i in range(0, len(ci['circuitos'][0]['nome'])):
                 #print("Circuito:{0}, id={1}".format(ci['circuitos'][0]['nome'][i], ci['circuitos'][0]['id'][i]))
-                add_circuito_to_file(ci['circuitos'][0]['nome'][i], ci['circuitos'][0]['id'][i])
+                #add_circuito_to_file(ci['circuitos'][0]['nome'][i], ci['circuitos'][0]['id'][i])
+                json['circuitos'].append({"nome":ci['circuitos'][0]['nome'][i],"id":ci['circuitos'][0]['id'][i]})
 
-        ''' OLD
-        interfaces = lista_interfaces(name)
-        if interfaces != None:
-            for i in range(1,len(interfaces['nome'])):
-                print("Interface:{0}, id={1}".format(interfaces['nome'][i], interfaces['id'][i]))
-                add_slots_to_file(interfaces['nome'][i],interfaces['id'][i])
-        else:
-            print("Nenhuma interface cadasrada nessa OLT.")
-        ## VERIFICA CIRCUITOS DA OLT
-        add_olt_circuitos_to_file(name)
-        circuitos = lista_circuito(name)
-        if circuitos != None:
-            for i in range(0, len(circuitos['nome'])):
-                print("Circuito:{0}, id={1}".format(circuitos['nome'][i], circuitos['id'][i]))
-                add_circuito_to_file(circuitos['nome'][i], circuitos['id'][i])
-        else:
-            print("Nenhuma interface cadasrada nessa OLT.")
-        '''
+        mongodb.insert_one('olts',json)
 
     quit(__DRIVER[0])
 
@@ -296,17 +224,9 @@ def quit(driver):
 
 class OLTs:
     def __init__(self):
-        self.config = configparser.ConfigParser()
+        db = mongodb.get_database()
+        self.collection = db['olts']
 
-        filename = inspect.getframeinfo(inspect.currentframe()).filename
-        self.path = find_path()
-
-        p = pathlib.Path(str(self.path) + 'olts.ini')
-        if not p.exists():
-            print('Lista de OLTs (olts.ini) não encontrada, execute o script novamente sem nenhum atributo e siga as instruções para criar a lista.')
-            quit()
-
-        self.config.read(str(self.path) + 'olts.ini')
 
     def get_olt_id(self, olt):
         if olt[:3] == 'OLT':
@@ -314,7 +234,10 @@ class OLTs:
         else:
             olt_name = 'OLT-GPON-{0}'.format(olt.upper())
 
-        return self.config.get(olt_name,'id')
+        result = self.collection.find_one({"name":olt_name},{"id":1,"_id":0})
+        return result['id']
+
+
 
     def get_olt_slot_id(self, olt, slot):
         if olt[:3] == 'OLT':
@@ -327,7 +250,8 @@ class OLTs:
         else:
             olt_slot = 'gpon-olt_{0}'.format(slot)
 
-        return self.config.get(olt_name,olt_slot)
+        result = self.collection.find_one({"name":olt_name},{"interfaces":{"$elemMatch":{"nome":olt_slot}}})
+        return result['interfaces'][0]['id']
 
     def get_olt_slots(self, olt):
         if olt[:3] == 'OLT':
@@ -335,12 +259,16 @@ class OLTs:
         else:
             olt_name = 'OLT-GPON-{0}'.format(olt)
 
-        return self.config.items(olt_name)
+        result = self.collection.find_one({"name": olt_name}, {"interfaces":1, "_id": 0})
+
+        return result['interfaces']
 
     def get_olt_circuitos(self, olt):
         if olt[:3] == 'OLT':
-            olt_name = 'CIRCUITOS-{0}'.format(olt)
+            olt_name = olt.upper()
         else:
-            olt_name = 'CIRCUITOS-OLT-GPON-{0}'.format(olt)
+            olt_name = 'OLT-GPON-{0}'.format(olt.upper())
 
-        return self.config.items(olt_name)
+        result = self.collection.find_one({"name": olt_name}, {"circuitos": 1, "_id": 0})
+
+        return result['circuitos']

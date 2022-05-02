@@ -1,7 +1,7 @@
 from bs4 import BeautifulSoup
 import httpx
 
-LOCAL_VERSION = '3.0';
+LOCAL_VERSION = '3.1';
 
 def get_online_version():
     try:
@@ -9,7 +9,6 @@ def get_online_version():
         div = soup.find('div', {"class": "Box-body"})
         online_version = div.find('a').text
         if online_version != LOCAL_VERSION:
-            print(
-                "Uma nova versão do script está disponível para baixar em: https://github.com/ewertonhm/cmdSA/releases")
+            print("Uma nova versão do script está disponível para baixar em: https://github.com/ewertonhm/cmdSA/releases")
     except Exception as e:
         print("Não foi possível verificar se existem atualizações disponíveis")

@@ -1,0 +1,11 @@
+bs4
+lxml
+rich
+PyCryptodomex
+cx_Freeze
+httpx
+selenium
+tqdm
+dload
+pymongo
+dnspython

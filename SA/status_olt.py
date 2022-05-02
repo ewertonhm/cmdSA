@@ -193,7 +193,9 @@ class StatusOlt(SA):
                     sinal = 'N/A'
                     status = 'N/A'
 
-                    onu_status = self.verificar_onu_array(cs[2].text)
+                    s = StatusOnu(self.login, self.senha)
+
+                    onu_status = s.verificar_onu_array(cs[2].text)
 
                     sinal = onu_status['sinal']
                     status = onu_status['status']
@@ -307,15 +309,7 @@ class StatusOlt(SA):
         except Exception as e:
             table.add_column(interface)
             table.add_row('Interface/olt não encontrado ou não existem ONUs cadastradas nesse circuito.')
-            '''
-            print('#' * 20)
-            pprint.pprint(e)
-            pprint.pprint(thead)
-            print('#' * 20)
-            pprint.pprint(soup)
-            print('#' * 20)
-            print()
-            '''
+
         finally:
             table.caption = str('Working: {0}/{1}'.format(working, total))
             self.console.print(table)
@@ -326,4 +320,4 @@ class StatusOlt(SA):
         db_olts = busca_olt.OLTs()
         slots = db_olts.get_olt_slots(olt)
         for i in range (1, len(slots)):
-            self.verificar_status_olt_interface(olt,slots[i][0])
+            self.verificar_status_olt_interface(olt,slots[i]['nome'])

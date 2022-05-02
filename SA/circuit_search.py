@@ -1,24 +1,11 @@
-from conf.configs import find_path
-import configparser
-import pathlib
-import inspect
+
+from Database import mongodb
+from pprint import pprint
 
 class BuscaCircuito:
     def __init__(self):
-        self.config = configparser.ConfigParser()
-
-        filename = inspect.getframeinfo(inspect.currentframe()).filename
-        self.path = find_path()
-
-        p = pathlib.Path(str(self.path) + 'circuitos.ini')
-        if not p.exists():
-            print('Lista de Circuitos (circuitos.ini) não encontrada, execute o script novamente sem nenhum atributo e siga as instruções para criar a lista.')
-            quit()
-
-        # for debbuging:
-        #self.config.read('circuitos.ini')
-
-        self.config.read(str(self.path) + 'circuitos.ini')
+        db = mongodb.get_database()
+        self.collection = db['olts']
 
     def search_circuit(self, param):
         """
@@ -26,10 +13,39 @@ class BuscaCircuito:
         :param param: String, parametro de pesquisa
         :return: Lista, lista com os restultados
         """
-        circuitos = self.config.items('circuitos')
-        circ = []
-        for c in circuitos:
-            circ.append(c[0].upper())
 
-        result = list(filter(lambda x: param.upper() in x, circ))
+        query = [
+                    {
+                        '$match': {
+                            'circuitos': {
+                                '$elemMatch': {
+                                    'nome': {
+                                        '$regex': f'.*{param}.*'
+                                    }
+                                }
+                            }
+                        }
+                    }, {
+                        '$unwind': {
+                            'path': '$circuitos'
+                        }
+                    }, {
+                        '$project': {
+                            '_id': 0,
+                            'circuito': '$circuitos.nome',
+                            'id': '$circuitos.id'
+                        }
+                    }, {
+                        '$match': {
+                            'circuito': {
+                                '$regex': f'.*{param}.*'
+                            }
+                        }
+                    }
+                ]
+
+
+
+        result = self.collection.aggregate(query)
+
         return result
