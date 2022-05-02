@@ -49,7 +49,7 @@ def main():
         c = BuscaCircuito()
         search_term = []
         for circ in AllCircuitos:
-            result = c.search_circuit(circ)
+            result = c.search_circuit(circ.upper())
             for r in result:
                 search_term.append(r['circuito'])
         print(f'Circuitos encontrados: {search_term}')
@@ -131,6 +131,7 @@ def main():
         s.print_onus_disponiveis_ativacao(Ativacao[0])
 
     # no option set
+    '''
     else:
         olts_path = find_path() + 'olts.ini'
         if not os.path.isfile(olts_path):
@@ -153,7 +154,7 @@ def main():
                 busca_olt.start_driver()
                 busca_olt.sa_site_login(credenciais.getLogin(), credenciais.getSenha())
                 busca_olt.lista_olts()
-
+    '''
     #debbug place:
 
 

@@ -1,12 +1,13 @@
 import sys
 from cx_Freeze import setup, Executable
+import dns.resolver
 
 # Dependencies are automatically detected, but it might need fine tuning.
 # "packages": ["os"] is used as example only
 build_exe_options = {
-    "packages": ["os"],
+    "packages": ["os","dns","pymongo"],
     "excludes": ["tkinter"],
-    "includes": ["Bemtevi", "conf", "Netbox", "SA"]
+    "includes": ["Bemtevi", "conf", "Netbox", "SA", "Database"]
 }
 
 # base="Win32GUI" should be used only for Windows GUI app
