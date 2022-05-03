@@ -4,6 +4,7 @@ PLANED TO THE NEXT UPDATE:
 
 BUGS Conhecidos:
 - Comandos -ca e -sca, que buscam clientes por CA, não exibe clientes que não tem CA documentada no bentivi.
+- Se errar a senha do bemtevi não tem uma verificação e a senha incorreta fica salva, sendo necessário apagar o arquivo credentials.ini.
 
 LATER-ON:
 - Automatic Updates (online)
