@@ -5,8 +5,7 @@ from SA.integra_erp_sa import Integra_SA_ERP
 from SA.circuit_search import BuscaCircuito
 from SA.status_olt import StatusOlt
 from args import Argumentos
-from conf import version_control
-from conf.configs import Credentials, find_path
+from conf.configs import Credentials, find_path, check_updates
 from Bemtevi.erp import Erp
 import os.path
 
@@ -164,7 +163,7 @@ if __name__ == '__main__':
 
     # Run
     main()
-    version_control.get_online_version()
+    check_updates()
 
     #stats.print_stats()
     # Debug

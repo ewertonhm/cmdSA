@@ -1,10 +1,8 @@
 
 PLANED TO THE NEXT UPDATE:
 - Criar uma rotino no prefect flow para atualizar a lista de circuitos e olts automáticamente.
-- Buscar a ultima versão disponível no mongodb ao invés de coletar no github.
 
 BUGS Conhecidos:
-- Script está sempre exibindo que uma nova versão está disponível, mesmo quando está na ultima versão.
 - Comandos -ca e -sca, que buscam clientes por CA, não exibe clientes que não tem CA documentada no bentivi.
 
 LATER-ON:
@@ -52,6 +50,8 @@ Implementado na versão 3.0:
 Impementado na versão 3.1:
 - Adicionar a lista de CIRCUITOS e OLTS em um MongoDB Atlas e acessar via cloud
 
-
-
+Implementado na versão 3.11:
+- Buscar a ultima versão disponível no mongodb ao invés de coletar no github.
+- A chave usada para criptografia das senhas salvas agora fica salva na nuvem para maior segurança
+[Corrigido] - Script está sempre exibindo que uma nova versão está disponível, mesmo quando está na ultima versão.
 

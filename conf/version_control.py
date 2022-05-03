@@ -1,7 +1,6 @@
 from bs4 import BeautifulSoup
 import httpx
 
-LOCAL_VERSION = '3.1';
 
 def get_online_version():
     try:

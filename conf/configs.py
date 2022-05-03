@@ -7,10 +7,19 @@ import sys
 import base64
 import getpass
 import dload
+from Database import mongodb
 
+db = mongodb.get_database()
+db_collecion = db['configs']
 
-secret_key = b'<secretkey>'
+confs = db_collecion.find_one()
+LOCAL_VERSION = '3.1'
+LAST_VERSION = confs['version']
+secret_key = confs['secret'].encode('utf-8')
 
+def check_updates():
+    if LOCAL_VERSION != LAST_VERSION:
+        print("Uma nova versão do script está disponível para baixar em: https://github.com/ewertonhm/cmdSA/releases")
 
 def download_chromedriver():
     return dload.save_unzip(
