@@ -13,7 +13,7 @@ db = mongodb.get_database()
 db_collecion = db['configs']
 
 confs = db_collecion.find_one()
-LOCAL_VERSION = '3.1'
+LOCAL_VERSION = '3.11'
 LAST_VERSION = confs['version']
 secret_key = confs['secret'].encode('utf-8')
 
