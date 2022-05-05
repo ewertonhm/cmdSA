@@ -13,13 +13,15 @@ db = mongodb.get_database()
 db_collecion = db['configs']
 
 confs = db_collecion.find_one()
-LOCAL_VERSION = '3.11'
+LOCAL_VERSION = '3.12'
 LAST_VERSION = confs['version']
 secret_key = confs['secret'].encode('utf-8')
+
 
 def check_updates():
     if LOCAL_VERSION != LAST_VERSION:
         print("Uma nova versão do script está disponível para baixar em: https://github.com/ewertonhm/cmdSA/releases")
+
 
 def download_chromedriver():
     return dload.save_unzip(
