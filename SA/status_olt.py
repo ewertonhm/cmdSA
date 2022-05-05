@@ -11,6 +11,7 @@ from SA.status_onu import StatusOnu
 # from rich import style
 from pprint import pprint
 
+
 class StatusOlt(SA):
 
     def verificar_onus_disponiveis_ativacao_circuito(self, circ_id):
@@ -22,8 +23,10 @@ class StatusOlt(SA):
         """
         url = "http://ativacaofibra.redeunifique.com.br/cadastro/interno.php?pg=interno&pg1=novos_cadastros/ativar_onu"
         circuito = self.reorganize_circ_id_ativ(circ_id)
-        post = {"circ_id": circuito, "botao": "Verificar ONU disponíveis para ativação "}
-        soup = BeautifulSoup(self.session.post(url, data=post, timeout=30).text, 'lxml')
+        post = {"circ_id": circuito,
+                "botao": "Verificar ONU disponíveis para ativação "}
+        soup = BeautifulSoup(self.session.post(
+            url, data=post, timeout=30).text, 'lxml')
 
         form = soup.find('form', attrs={'name': 'aa'})
         onus = form.find_all('option')
@@ -39,13 +42,15 @@ class StatusOlt(SA):
         :return: Lista com os circ_ids
         """
         db_olts = busca_olt.OLTs()
-        circuitos = db_olts.get_olt_circuitos(olt)
+        circuitos = db_olts.get_olt_circuitos(olt.upper())
         Circuitos = []
         for circuito in circuitos:
             Circuitos.append(circuito['nome'])
 
-        post = {"circ": self.list_to_array(Circuitos), "pesquisar": "Pesquisar Circuito"}
-        soup = BeautifulSoup(self.session.post(self.verificar_status, data=post).text, 'lxml')
+        post = {"circ": self.list_to_array(
+            Circuitos), "pesquisar": "Pesquisar Circuito"}
+        soup = BeautifulSoup(self.session.post(
+            self.verificar_status, data=post).text, 'lxml')
         input_tag = soup.find_all(attrs={'name': 'circ_id[]'})
 
         circ_ids = []
@@ -66,14 +71,16 @@ class StatusOlt(SA):
         slot = dados[3]
         slot_id = dados[4]
 
-        dados_new = '{0}|{1}|{2}|{3}|{4}|ativo'.format(olt_id, slot_id, circ_name, slot, circ_id)
+        dados_new = '{0}|{1}|{2}|{3}|{4}|ativo'.format(
+            olt_id, slot_id, circ_name, slot, circ_id)
 
         return dados_new
 
     def print_onus_disponiveis_ativacao(self, olt):
-        table = Table(title="ONU disponíveis para ativação na OLT: {0}.".format(olt))
+        table = Table(
+            title="ONU disponíveis para ativação na OLT: {0}.".format(olt))
         circuitos = self.get_circuit_ids(olt)
-        if len(circuitos)>0:
+        if len(circuitos) > 0:
             table.add_column('ONU')
             table.add_column('Circuito')
 
@@ -91,13 +98,14 @@ class StatusOlt(SA):
                 data['circuito'].append(circ[1])
 
                 with concurrent.futures.ThreadPoolExecutor() as executor:
-                    data['thread'].append(executor.submit(self.verificar_onus_disponiveis_ativacao_circuito, circuito))
+                    data['thread'].append(executor.submit(
+                        self.verificar_onus_disponiveis_ativacao_circuito, circuito))
 
                 counter = counter+1
 
             for index in data['index']:
                 uncf_onu = data['thread'][index].result()
-                if len(uncf_onu)>0:
+                if len(uncf_onu) > 0:
                     for onu in uncf_onu:
                         table.add_row(onu, data['circuito'][index])
 
@@ -107,24 +115,26 @@ class StatusOlt(SA):
         self.console.print(table)
 
     def verificar_status_id(self, olt, cod_cli):
-        title = str('Status ONUs na OLT {0}, com o Client ID {1}:'.format(olt, cod_cli))
-        ## create table
+        title = str(
+            'Status ONUs na OLT {0}, com o Client ID {1}:'.format(olt, cod_cli))
+        # create table
         table = Table(title=title)
 
-        ## Criar sessão e logar
+        # Criar sessão e logar
         timeout = httpx.Timeout(10.0, connect=60.0)
         session = httpx.Client(timeout=timeout)
         auth = {"login": self.login, "senha": self.senha, "acao": self.acao}
         session.post(self.start_url, data=auth)
 
-        ## Busca IDs da OLT e Interface
+        # Busca IDs da OLT e Interface
         db_olts = busca_olt.OLTs()
         olt_id = db_olts.get_olt_id(olt)
         #interface_id = db_olts.get_olt_slot_id(olt, interface)
 
-        ## get circ_status
+        # get circ_status
         post = {"pesquisar": "Listar todos ID dessa OLT", "id_olt": olt_id}
-        soup = BeautifulSoup(session.post(self.ids_cadastrados, data=post).text, 'lxml')
+        soup = BeautifulSoup(session.post(
+            self.ids_cadastrados, data=post).text, 'lxml')
 
         thead = soup.find('thead')
         total = 0
@@ -136,7 +146,7 @@ class StatusOlt(SA):
             table.add_column(Header[0])
             # id
             table.add_column(Header[1])
-            #SN
+            # SN
             table.add_column(Header[2])
             # status
             table.add_column("Status")
@@ -154,12 +164,12 @@ class StatusOlt(SA):
             #table.add_column(str(Header[10]) + ' ' + str(Header[11]) + ' ' + str(Header[12]))
             # senha p1 voip
             #table.add_column(str(Header[13]) + ' ' + str(Header[14]) + ' ' + str(Header[15]))
-            #coip usuario p2
+            # coip usuario p2
             #table.add_column(str(Header[16]) + ' ' + str(Header[17]) + ' ' + str(Header[18]))
             # senha p2 void
             #table.add_column(str(Header[19]) + ' ' + str(Header[20]) + ' ' + str(Header[21]))
             # iptv
-            #table.add_column(Header[22])
+            # table.add_column(Header[22])
             # vlan
             table.add_column(Header[23])
             # inner vlan
@@ -187,8 +197,10 @@ class StatusOlt(SA):
 
                 if link[cod_location + 11:] == cod_cli:
 
-                    btv_link = '[link=' + link + ']' + link[cod_location + 11:] + '[/link]'
-                    dalo_link = '[link=https://dashboard.redeunifique.com.br/dash_cliente.php?item=' + cs[4].text + ']' + cs[4].text + '[/link]'
+                    btv_link = '[link=' + link + ']' + \
+                        link[cod_location + 11:] + '[/link]'
+                    dalo_link = '[link=https://dashboard.redeunifique.com.br/dash_cliente.php?item=' + \
+                        cs[4].text + ']' + cs[4].text + '[/link]'
 
                     sinal = 'N/A'
                     status = 'N/A'
@@ -222,7 +234,8 @@ class StatusOlt(SA):
                     total = total + 1
         except Exception as e:
             table.add_column(olt)
-            table.add_row('ID não encontrado ou não existem ONUs cadastradas com esse ID.')
+            table.add_row(
+                'ID não encontrado ou não existem ONUs cadastradas com esse ID.')
             '''
             print('#' * 20)
             pprint.pprint(e)
@@ -234,31 +247,33 @@ class StatusOlt(SA):
             '''
         finally:
             if total == 0:
-                table.add_row('N/A','N/A','N/A','N/A','N/A','N/A','N/A','N/A')
+                table.add_row('N/A', 'N/A', 'N/A', 'N/A',
+                              'N/A', 'N/A', 'N/A', 'N/A')
             self.console.print(table)
             print()
 
-
-
     def verificar_status_olt_interface(self, olt, interface):
-        title = str('Status ONUs na interface {0}, da OLT {1}:'.format(interface, olt))
-        ## create table
+        title = str(
+            'Status ONUs na interface {0}, da OLT {1}:'.format(interface, olt))
+        # create table
         table = Table(title=title)
 
-        ## Criar sessão e logar
+        # Criar sessão e logar
         timeout = httpx.Timeout(10.0, connect=60.0)
         session = httpx.Client(timeout=timeout)
         auth = {"login": self.login, "senha": self.senha, "acao": self.acao}
         session.post(self.start_url, data=auth)
 
-        ## Busca IDs da OLT e Interface
+        # Busca IDs da OLT e Interface
         db_olts = busca_olt.OLTs()
         olt_id = db_olts.get_olt_id(olt)
         interface_id = db_olts.get_olt_slot_id(olt, interface)
 
-        ## get circ_status
-        post = {"id_olt": olt_id, "int_name": interface_id, "circ_id[]": "selecione", "pesquisar":"Continuar"}
-        soup = BeautifulSoup(session.post(self.verificar_status, data=post).text, 'lxml')
+        # get circ_status
+        post = {"id_olt": olt_id, "int_name": interface_id,
+                "circ_id[]": "selecione", "pesquisar": "Continuar"}
+        soup = BeautifulSoup(session.post(
+            self.verificar_status, data=post).text, 'lxml')
 
         # soup = BeautifulSoup(self.session.post(self.verificar_status, data=post).text, 'lxml')
 
@@ -278,7 +293,6 @@ class StatusOlt(SA):
             table.add_column(str(Header[8]) + ' ' + str(Header[9]))
             table.add_column(Header[12])
 
-
             tbody = soup.find_all('tbody')
 
             total = len(tbody)
@@ -291,7 +305,8 @@ class StatusOlt(SA):
                 link = link['href']
                 cod_location = str(link).find('codCliente=')
 
-                btv_link = '[link=' + link + ']' + link[cod_location + 11:] + '[/link]'
+                btv_link = '[link=' + link + ']' + \
+                    link[cod_location + 11:] + '[/link]'
                 dalo_link = '[link=https://dashboard.redeunifique.com.br/dash_cliente.php?item=' + cs[5].text + ']' + cs[
                     5].text + '[/link]'
 
@@ -299,16 +314,20 @@ class StatusOlt(SA):
                     ont_status = cs[2].text.strip()
                     working += 1
                 elif cs[2].text.strip() == 'LOS':
-                    ont_status = "[disaster]" + cs[2].text.strip() + "[/disaster]"
+                    ont_status = "[disaster]" + \
+                        cs[2].text.strip() + "[/disaster]"
                 elif cs[2].text.strip() == 'DyingGasp Sem energia':
                     ont_status = "[warning]DyingGasp[/warning]"
                 else:
-                    ont_status = "[warning]" + cs[2].text.strip() + "[/warning]"
+                    ont_status = "[warning]" + \
+                        cs[2].text.strip() + "[/warning]"
 
-                table.add_row(cs[0].text, cs[1].text, ont_status, cs[3].text, btv_link, dalo_link, cs[6].text, cs[8].text)
+                table.add_row(cs[0].text, cs[1].text, ont_status,
+                              cs[3].text, btv_link, dalo_link, cs[6].text, cs[8].text)
         except Exception as e:
             table.add_column(interface)
-            table.add_row('Interface/olt não encontrado ou não existem ONUs cadastradas nesse circuito.')
+            table.add_row(
+                'Interface/olt não encontrado ou não existem ONUs cadastradas nesse circuito.')
 
         finally:
             table.caption = str('Working: {0}/{1}'.format(working, total))
@@ -316,8 +335,8 @@ class StatusOlt(SA):
             print()
 
     def verificar_status_olt(self, olt):
-        ## Busca IDs da OLT e Interface
+        # Busca IDs da OLT e Interface
         db_olts = busca_olt.OLTs()
         slots = db_olts.get_olt_slots(olt)
-        for i in range (1, len(slots)):
-            self.verificar_status_olt_interface(olt,slots[i]['nome'])
+        for i in range(1, len(slots)):
+            self.verificar_status_olt_interface(olt, slots[i]['nome'])
