@@ -6,7 +6,7 @@ import dns.resolver
 # "packages": ["os"] is used as example only
 build_exe_options = {
     "packages": ["os", "dns", "pymongo"],
-    "excludes": ["tkinter"],
+    "excludes": ["tkinter", "flow"],
     "includes": ["Bemtevi", "conf", "Netbox", "SA", "Database"]
 }
 
