@@ -42,7 +42,7 @@ class StatusOlt(SA):
         circuitos = db_olts.get_olt_circuitos(olt)
         Circuitos = []
         for circuito in circuitos:
-            Circuitos.append(circuito[0])
+            Circuitos.append(circuito['nome'])
 
         post = {"circ": self.list_to_array(Circuitos), "pesquisar": "Pesquisar Circuito"}
         soup = BeautifulSoup(self.session.post(self.verificar_status, data=post).text, 'lxml')
