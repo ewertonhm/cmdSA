@@ -1,6 +1,6 @@
 
 PLANED TO THE NEXT UPDATE:
-- Criar uma rotino no prefect flow para atualizar a lista de circuitos e olts automáticamente.
+- Comando para verificar o status de todos os circuitos de uma CE
 
 BUGS Conhecidos:
 - Comandos -ca e -sca, que buscam clientes por CA, não exibe clientes que não tem CA documentada no bentivi.
