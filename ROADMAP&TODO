@@ -1,6 +1,7 @@
 
 PLANED TO THE NEXT UPDATE:
 - Comando para verificar o status de todos os circuitos de uma CE
+- Comando -v para verificar a versão do script
 
 BUGS Conhecidos:
 - Comandos -ca e -sca, que buscam clientes por CA, não exibe clientes que não tem CA documentada no bentivi.
